@@ -6,24 +6,48 @@ class cproxy(Exception):
 
     def __init__(self, fd):
         self.fd = fd
+        self.sfd = ''
+        self.sfd = self.sfd.join(['I', str(self.fd), '\n.'])
     
+    def glue(self, opname, *args):
+        # dump all
+        sop = cPickle.dumps(opname)
+        spara = ''
+        for arg in args:
+            spara += cPickle.dumps(arg)
+            # joint with '\t'
+            spara += '\t'
+        result = ''
+        result = result.join([sop, '\t', spara, self.sfd])
+        return result
+        
     def push(self, key, val):
-        # dump all
-        sop = cPickle.dumps('set')
-        skey = cPickle.dumps(key)
-        sval = cPickle.dumps(val) 
-        # joint with '\t'
-        sset = sop + '\t' + skey + '\t' + sval + '\t' + 'I' + str(self.fd) + '\n.'
-        return sset
-        
+        return self.glue('push', key, val)
+    
+    def push_multi(self, kvdict):
+        return self.glue('push_multi', kvdict)
+         
     def pull(self, key):
-        # dump all
-        sop = cPickle.dumps('get')
-        skey = cPickle.dumps(key)
-        # joint with '\t'
-        sget = sop + '\t' + skey + '\t' + 'I' + str(self.fd) + '\n.' 
-        return sget
+        return self.glue('pull', key)
+
+    def pull_multi(self, keylst):
+        return self.glue('pull_multi', keylst)
         
+    def inc(self, key, delta):
+        return self.glue('inc', key, delta)
+        
+    def pushs(self, key):
+        return self.glue('pushs', key)
+        
+    def pulls(self, key, val, uniq):
+        return self.glue('pulls', key, val, uniq)
+        
+    def remove(self, key):
+        return self.glue('remove', key)
+        
+    def clear(self):
+        return self.glue('clear')        
+
 if __name__ == '__main__':
     # client proxy to call
     obj = cproxy(7)
