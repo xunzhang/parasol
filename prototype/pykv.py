@@ -11,7 +11,6 @@ class pykv(Exception):
         self.pdict = {}
 
     def set(self, key, val):
-        print 'hell'
         self.pdict[key] = val
         return True
    
@@ -27,12 +26,23 @@ class pykv(Exception):
         for key in keylst:
             lst.append(self.get(key))
         return lst
- 
+    
+    # delta can be negative value 
+    def incr(self, key, delta):
+        if key not in self.pdict:
+            return False
+        try:
+            self.pdict[key] += delta
+        except:
+            # not integer
+            return False
+        return True
+    
     def gets(self, key):
         v = self.get(key)
         if v:
             return v, hash(repr(v))
-
+    
     def cas(self, key, val, uniq):
         r = self.gets(key)
         if r:
@@ -68,5 +78,10 @@ if __name__ == '__main__':
         r = kvdict.cas('hello', 'mickey', uniq)
 
     print kvdict.get('hello')
+    
+    kvdict.set('python', 1)
+    kvdict.incr('python', 3)
+    kvdict.incr('python', -1)
+    print kvdict.get('python')
     
     kvdict.finalize()

@@ -1,9 +1,4 @@
 #! /usr/bin/python
-#
-# 
-#
-#
-#
 
 import cPickle
 
