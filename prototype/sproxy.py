@@ -13,12 +13,10 @@ class sproxy(Exception):
         kvpoll_lst[self.fd].set(key, val)
 
     def pull(self, key):
-        print 'pulll'
         return kvpoll_lst[self.fd].get(key)
          
     def parser(self, st):
         l = st.split('\t')
-        print l
         oplst = [cPickle.loads(i) for i in l]
         op = oplst[0]
         if oplst[-1] != self.fd:

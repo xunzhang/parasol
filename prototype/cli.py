@@ -1,8 +1,21 @@
 import sys 
-import time
 import socket 
 from pykv import pykv
 from cproxy import cproxy
+
+class kv(Exception):
+    
+    def __init__(self, host, port):
+        self.host = host
+        self.port = port
+        
+    def push(self, key, val):
+        conn = cservice(self.host, self.port)
+        conn.push(key, val)
+        
+    def pull(self, key):
+        conn = cservice(self.host, self.port)
+        return conn.pull(key)
 
 class cservice(Exception):
     
@@ -18,37 +31,20 @@ class cservice(Exception):
         self.sock.sendall(str(self.fid))
         self.cp = cproxy(self.fid)
  
-    def cserviceinit(self):
-        return self.cp
-    
     def push(self, key, val):
         self.sock.sendall(self.cp.push(key, val)) 
     
     def pull(self, key):
         self.sock.sendall(self.cp.pull(key))
-        print 'send successfully'
         res = self.sock.recv(4096)
         return res
     
 if __name__ == '__main__':
-    obj = cservice('localhost', 7900)
-    # alg code
-    obj.push('hello', 'kitty')
-    #time.sleep(1)
-    print obj.pull('hello')
-
-#try:
-#    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-#except socket.error, msg:
-#    print 'Failed to C a socket. Error code: ' + str(msg[0]) + ' , Msg : ' + msg[1]
-#    sys.exit()
-#s.connect(('localhost', 7900))
-#fid = s.recv(4096)
-#s.sendall(fid)
-#cp = cproxy(int(fid))
-# alg code, cp is init's return 
-#st = cp.push('demokey', 10)
-# alg code
-#st2 = cp.pull('demokey')
-#s.sendall(st)
-#s.sendall(st2)
+    # alg code demo
+    storeobj = kv('localhost', 7900)
+    storeobj.push('hello', 'kitty')
+    print storeobj.pull('hello')
+    storeobj.push('key', 'val')
+    storeobj.push('matrix', 100)
+    print storeobj.pull('key')
+    print storeobj.pull('matrix')
