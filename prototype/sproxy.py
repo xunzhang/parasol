@@ -38,7 +38,7 @@ class sproxy(Exception):
     
     def parser(self, st):
         l = st.split('\t')
-        oplst = [cPickle.loads(i) for i in l]
+        oplst = [cPickle.loads(ii) for ii in l]
         op = oplst[0]
 
         if oplst[-1] != self.fd:

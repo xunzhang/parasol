@@ -1,26 +1,35 @@
 import socket
 import sys
-from thread import *
+import numpy as np
+import thread
+import time
 from pykv import pykv
 from config import kvpoll_lst, threadnum
 from sproxy import sproxy
 
-def cltthrd(conn, addr, index):
+def cltthrd(conn, index):
     conn.sendall(str(index))
     sid = conn.recv(1)
     op = conn.recv(4096)
 
     # parse op
     sp = sproxy(int(sid))
-
+    
     # do the operation
     v = sp.parser(op)
-
+    
+    #print v
+    #print type(v)
+    #print type(np.array([1]))
     # only send pull-like result
-    if v:
-        conn.sendall(str(v))
+    #if type(v) == np.array([1]):
+    #print 'yep'
+    conn.sendall(str(v).replace('     ', ' ').replace('    ', ' ').replace('   ', ' ').replace('  ', ' ').replace('[ ', '[').replace(' ]', ']'))
+    #elif v or v == 0:
+    #    print 'yes'
+    #    conn.sendall(str(v).replace(' ', ''))
 
-    conn.close()
+    #conn.close()
 
 if __name__ == '__main__':
 
@@ -32,12 +41,12 @@ if __name__ == '__main__':
     except socket.error , msg:
         print 'Bind failed. Error Code : ' + str(msg[0]) + ' Message ' + msg[1]
         sys.exit()
-    s.listen(6)
+    s.listen(1)
 
     while 1:
         threadnum += 1
         #print threadnum
         conn, addr = s.accept() # blocking call
-        start_new_thread(cltthrd, (conn, str(addr), 0))
+        thread.start_new_thread(cltthrd, (conn, 0))
 
     s.close()

@@ -8,10 +8,17 @@ class kv(Exception):
     def __init__(self, host, port):
         self.host = host
         self.port = port
-        
+        self.connnum = 0
+        self.pushflag = False
+        self.pullflag = False 
+        #self.pushconn = cservice(self.host, self.port)
+        #self.pullconn = cservice(self.host, self.port)
+         
     def push(self, key, val):
-        conn = cservice(self.host, self.port)
-        conn.push(key, val)
+        #if not self.pushflag:
+        self.pushconn = cservice(self.host, self.port)
+        #    self.pushflag = True
+        self.pushconn.push(key, val)
     
     def push_multi(self, kvdict):
         conn = cservice(self.host, self.port)
@@ -57,7 +64,7 @@ class cservice(Exception):
  
     def push(self, key, val):
         self.sock.sendall(self.cp.push(key, val)) 
-    
+        
     def push_multi(self, kvdict):
         self.sock.sendall(self.cp.push_multi(kvdict))
     
@@ -100,5 +107,10 @@ if __name__ == '__main__':
     print storeobj.pull_multi(['JWM', 'jiang'])
     storeobj.remove('jiang')
     print storeobj.pull('jiang')
+    storeobj.push('p[1:,]', [0.3,0.4,0.5,0.6])
+    print storeobj.pull('p[1:,]')
+    print type(storeobj.pull('p[1:,]'))
+    print [float(i) for i in storeobj.pull('p[1:,]').strip(']').strip('[').split(',')]
+    print type([float(i) for i in storeobj.pull('p[1:,]').strip(']').strip('[').split(',')])
     storeobj.clear()
     print storeobj.clear()

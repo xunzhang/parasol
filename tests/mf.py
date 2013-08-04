@@ -5,13 +5,9 @@
 # matrix factorization using gradient descent
 #
 
-try:
-    import numpy as np
-except:
-    print 'Please install numpy first.'
-    exit(0)
+import numpy as np
 from pykv import pykv
-
+from clt import kv
 
 '''
 @input:
@@ -28,21 +24,28 @@ from pykv import pykv
 @output:
     matrix p and q
 '''
-def mf_kernel(r, dimu, dimi, p, q, k, alpha = 0.0002, beta = 0.02, steps = 50000, conv = 0.0001):
+def mf_kernel(r, dimu, dimi, p, q, k, alpha = 0.0002, beta = 0.02, steps =
+10000, conv = 0.0001):
     q = q.transpose()
     for it in xrange(steps):
         for i in xrange(dimu):
             for j in xrange(dimi):
                 # for every rij
                 if r[i][j] != 0:
-                    p = kvstore.get('p')
-                    q = kvstore.get('q')
+                    # only need to get p[i, :] and q[:, j]
+                    spkey = 'p[' + str(i) + ',:]'
+                    tmp = kvm.pull(spkey)
+                    p[i, :] = [float(ii) for ii in tmp.strip('[').strip(']').replace(' ', '').split(',')]
+                    sqkey = 'q[:,' + str(j) + ']'
+                    tmp = kvm.pull(sqkey)
+                    q[:,j] = [float(jj) for jj in tmp.strip('[').strip(']').replace(' ', '').split(',')]
                     eij = r[i][j] - np.dot(p[i, :], q[:, j])
                     for ki in xrange(k):
                         p[i][ki] += alpha * (2 * eij * q[ki][j] - beta * p[i][ki])
                         q[ki][j] += alpha * (2 * eij * p[i][ki] - beta * q[ki][j])
-                    kvstore.set('p', p)
-                    kvstore.set('q', q)
+                    # only need to set p[i, :] and q[:, j]
+                    kvm.push(spkey, list(p[i, :]))
+                    kvm.push(sqkey, list(q[:, j]))
         # check if convergent
         esum = 0
         for i in xrange(dimu):
@@ -63,12 +66,25 @@ def matrix_factorization(r, k):
     # init p & q
     p = np.random.rand(u, k)
     q = np.random.rand(i, k)
+    print p 
+    print q
+    kvm.push('p[0,:]', list(p[0, :]))
+    kvm.push('p[1,:]', list(p[1, :]))
+    kvm.push('p[2,:]', list(p[2, :]))
+    kvm.push('p[3,:]', list(p[3, :]))
+    kvm.push('p[4,:]', list(p[4, :]))
+    kvm.push('q[:,0]', list(q[0, :]))
+    kvm.push('q[:,1]', list(q[1, :]))
+    kvm.push('q[:,2]', list(q[2, :]))
+    kvm.push('q[:,3]', list(q[3, :]))
+    #kvm.push_multi({'p[0,:]' : list(p[0, :]), 'p[1,:]' : list(p[1, :]), 'p[2,:]' : list(p[2, :]), 'p[3,:]' : list(p[3, :]), 'p[4,:]' : list(p[4, :])})
+    #kvm.push_multi({'q[:,0]' : list(q[0, :]), 'q[:,1]' : list(q[1, :]), 'q[:,2]' : list(q[2, :]), 'q[:,3]' : list(q[3, :])})
     
-    kvstore.set_multi({'p' : p, 'q' : q.transpose()})
+    #kvstore.set_multi({'p' : p, 'q' : q.transpose()})
     #kvstore.get_multi(['p', 'q'])
     # kernel mf solver
     mf_kernel(r, u, i, p, q, k)
-    kvstore.finalize()
+    #kvstore.finalize()
     
     return p, q
 
@@ -82,7 +98,7 @@ if __name__ == '__main__':
          [0, 1, 5, 4],
         ]
     mtx = np.array(mtx)
-    kvstore = pykv()
+    kvm = kv('localhost', 7900)
     p, q = matrix_factorization(mtx, k)
     print 'p is: '
     print p
