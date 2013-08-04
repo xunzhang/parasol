@@ -3,6 +3,7 @@ import sys
 import numpy as np
 import thread
 import time
+import cPickle
 from pykv import pykv
 from config import kvpoll_lst, threadnum
 from sproxy import sproxy
@@ -24,7 +25,10 @@ def cltthrd(conn, index):
     # only send pull-like result
     #if type(v) == np.array([1]):
     #print 'yep'
-    conn.sendall(str(v).replace('     ', ' ').replace('    ', ' ').replace('   ', ' ').replace('  ', ' ').replace('[ ', '[').replace(' ]', ']'))
+    if v or v == 0:
+        content = cPickle.dumps(v)
+        conn.sendall(content)
+    #conn.sendall(str(v).replace('     ', ' ').replace('    ', ' ').replace('   ', ' ').replace('  ', ' ').replace('[ ', '[').replace(' ]', ']'))
     #elif v or v == 0:
     #    print 'yes'
     #    conn.sendall(str(v).replace(' ', ''))

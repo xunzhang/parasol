@@ -1,5 +1,6 @@
 import sys 
 import socket 
+import cPickle
 from pykv import pykv
 from cproxy import cproxy
 
@@ -11,8 +12,6 @@ class kv(Exception):
         self.connnum = 0
         self.pushflag = False
         self.pullflag = False 
-        #self.pushconn = cservice(self.host, self.port)
-        #self.pullconn = cservice(self.host, self.port)
          
     def push(self, key, val):
         #if not self.pushflag:
@@ -70,22 +69,22 @@ class cservice(Exception):
     
     def pull(self, key):
         self.sock.sendall(self.cp.pull(key))
-        res = self.sock.recv(4096)
+        res = cPickle.loads(self.sock.recv(4096))
         return res
     
     def pull_multi(self, keylst):
         self.sock.sendall(self.cp.pull_multi(keylst))
-        res = self.sock.recv(4096)
+        res = cPickle.loads(self.sock.recv(4096))
         return res
    
     def pushs(self, key):
         self.sock.sendall(self.cp.pushs(key))
-        res = self.sock.recv(4096)
+        res = cPickle.loads(self.sock.recv(4096))
         return res
 
     def pulls(self, key, val, uniq):
         self.sock.sendall(self.cp.pulls(key, val, uniq))
-        res = self.sock.recv(4096)
+        res = cPickle.loads(self.sock.recv(4096))
         return res
     
     def remove(self, key):
