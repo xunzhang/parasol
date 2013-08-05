@@ -5,7 +5,10 @@
 # matrix factorization using gradient descent
 #
 
+import sys
+sys.path.append('../prototype/')
 import numpy as np
+#from mpi4py import MPI
 from pykv import pykv
 from clt import kv
 
@@ -24,7 +27,7 @@ from clt import kv
 @output:
     matrix p and q
 '''
-def mf_kernel(r, dimu, dimi, p, q, k, alpha = 0.0002, beta = 0.02, steps = 3000, conv = 0.0001):
+def mf_kernel(r, dimu, dimi, p, q, k, alpha = 0.0002, beta = 0.02, steps = 1000, conv = 0.0001):
     q = q.transpose()
     for it in xrange(steps):
         for i in xrange(dimu):
@@ -49,7 +52,7 @@ def mf_kernel(r, dimu, dimi, p, q, k, alpha = 0.0002, beta = 0.02, steps = 3000,
         for i in xrange(dimu):
             for j in xrange(dimi):
                 if r[i][j] != 0:
-                    spkey = 'p[:,' + str(i) + ',:]'
+                    spkey = 'p[' + str(i) + ',:]'
                     sqkey = 'q[:,' + str(j) + ']'
                     p[i, :] = kvm.pull(spkey)
                     q[:, j] = kvm.pull(sqkey)
@@ -70,15 +73,6 @@ def matrix_factorization(r, k):
     q = np.random.rand(i, k)
     print p 
     print q
-    #kvm.push('p[0,:]', list(p[0, :]))
-    #kvm.push('p[1,:]', list(p[1, :]))
-    #kvm.push('p[2,:]', list(p[2, :]))
-    #kvm.push('p[3,:]', list(p[3, :]))
-    #kvm.push('p[4,:]', list(p[4, :]))
-    #kvm.push('q[:,0]', list(q[0, :]))
-    #kvm.push('q[:,1]', list(q[1, :]))
-    #kvm.push('q[:,2]', list(q[2, :]))
-    #kvm.push('q[:,3]', list(q[3, :]))
     kvm.push_multi({'p[0,:]' : list(p[0, :]), 'p[1,:]' : list(p[1, :]), 'p[2,:]' : list(p[2, :]), 'p[3,:]' : list(p[3, :]), 'p[4,:]' : list(p[4, :])})
     kvm.push_multi({'q[:,0]' : list(q[0, :]), 'q[:,1]' : list(q[1, :]), 'q[:,2]' : list(q[2, :]), 'q[:,3]' : list(q[3, :])})
     
