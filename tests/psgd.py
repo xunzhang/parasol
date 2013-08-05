@@ -6,7 +6,7 @@
 import sys
 sys.path.append('../prototype/')
 import memcache 
-from pykv import pykv
+#from pykv import pykv
 from clt import kv
 
 try:

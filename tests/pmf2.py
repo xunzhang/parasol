@@ -41,12 +41,16 @@ def mf_kernel(r, dimu, dimi, p, q, k, alpha = 0.0002, beta = 0.02, steps = 1000,
                     sqkey = 'q[:,' + str(j) + ']'
                     q[:,j] = kvm.pull(sqkey) 
                     eij = r[i][j] - np.dot(p[i, :], q[:, j])
+                    deltap = []
+                    deltaq = []
                     for ki in xrange(k):
-                        p[i][ki] += alpha * (2 * eij * q[ki][j] - beta * p[i][ki])
-                        q[ki][j] += alpha * (2 * eij * p[i][ki] - beta * q[ki][j])
+                        deltap.append(alpha * (2 * eij * q[ki][j] - beta * p[i][ki]))
+                        deltaq.append(alpha * (2 * eij * p[i][ki] - beta * q[ki][j]))
                     # only need to set p[i, :] and q[:, j]
-                    kvm.push(spkey, list(p[i, :]))
-                    kvm.push(sqkey, list(q[:, j]))
+                    kvm.update(spkey, deltap)
+                    kvm.update(sqkey, deltaq)
+                    #kvm.push(spkey, list(p[i, :]))
+                    #kvm.push(sqkey, list(q[:, j]))
         # check if convergent
         esum = 0
         for i in xrange(dimu):

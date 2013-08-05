@@ -32,9 +32,12 @@ class pykv(Exception):
         if key not in self.pdict:
             return False
         try:
-            self.pdict[key] += delta
+            if type(delta) == type([1]):
+                self.pdict[key] = [self.pdict[key][t] + delta[t] for t in range(len(delta))] 
+            else:
+                self.pdict[key] += delta
         except:
-            # not integer
+            # no + 
             return False
         return True
     
@@ -84,4 +87,8 @@ if __name__ == '__main__':
     kvdict.incr('python', -1)
     print kvdict.get('python')
     
+    kvdict.set('ruby', [1, 2, 3])
+    kvdict.incr('ruby', [1, 1, 1])
+    print kvdict.get('ruby')
+
     kvdict.finalize()

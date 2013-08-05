@@ -19,19 +19,10 @@ def cltthrd(conn, index):
     # do the operation
     v = sp.parser(op)
     
-    #print v
-    #print type(v)
-    #print type(np.array([1]))
     # only send pull-like result
-    #if type(v) == np.array([1]):
-    #print 'yep'
     if v or v == 0:
         content = cPickle.dumps(v)
         conn.sendall(content)
-    #conn.sendall(str(v).replace('     ', ' ').replace('    ', ' ').replace('   ', ' ').replace('  ', ' ').replace('[ ', '[').replace(' ]', ']'))
-    #elif v or v == 0:
-    #    print 'yes'
-    #    conn.sendall(str(v).replace(' ', ''))
 
     #conn.close()
 

@@ -31,6 +31,10 @@ class kv(Exception):
         conn = cservice(self.host, self.port)
         return conn.pull_multi(keylst)
     
+    def update(self, key, delta):
+        conn = cservice(self.host, self.port)
+        return conn.inc(key, delta)
+     
     def pushs(self, key):
         conn = cservice(self.host, self.port)
         return conn.pushs(key)
@@ -76,7 +80,10 @@ class cservice(Exception):
         self.sock.sendall(self.cp.pull_multi(keylst))
         res = cPickle.loads(self.sock.recv(4096))
         return res
-   
+    
+    def inc(self, key, delta):
+        self.sock.sendall(self.cp.inc(key, delta))
+     
     def pushs(self, key):
         self.sock.sendall(self.cp.pushs(key))
         res = cPickle.loads(self.sock.recv(4096))
