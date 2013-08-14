@@ -7,6 +7,7 @@ sys.path.append('/home/xunzhang/xunzhang/Data/book_interest/')
 from scipy import sparse
 import numpy as np
 from mpi4py import MPI
+from parallel import *
 from clt import kv
 import pparse as par
 
@@ -129,11 +130,12 @@ if __name__ == '__main__':
   # get rank
   rank = comm.Get_rank()
   # divide mtx
-  mtx = decomp2D(mtx, u, i, 2, 2, rank)
+  a, b = npfact2D(16)
+  mtx = decomp2D(mtx, u, i, a, b, rank)
   kvm = kv('localhost', 7900)
   if rank == 0:
     print 'init done'
-  p, q = matrix_factorization(mtx, k, rank, 2)
+  p, q = matrix_factorization(mtx, k, rank, b)
   #if rank == 3:
   #  print mtx
   #  print np.dot(p, q.T)
