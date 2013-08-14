@@ -3,6 +3,7 @@ import socket
 import cPickle
 from pykv import pykv
 from cproxy import cproxy
+import zmq
 
 class kv(Exception):
     
@@ -54,26 +55,23 @@ class kv(Exception):
 class cservice(Exception):
     
     def __init__(self, host, port):
-        try:
-             self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        except socket.error, msg:
-            print 'Failed to C a socket. Error code: ' + str(msg[0]) + ' , Msg : ' + msg[1]
-            sys.exit()
-
-        self.sock.connect((host, port))
-        self.fid = int(self.sock.recv(1))
-        self.sock.sendall(str(self.fid))
-        self.cp = cproxy(self.fid)
+        context = zmq.Context()
+        self.sock = context.socket(zmq.REQ)
+        initst = 'tcp://' + host + ':' + port
+        self.sock.connect("tcp://localhost:7907")
+        #self.sock.connect(initst)
+        self.cp = cproxy(0)
  
     def push(self, key, val):
-        self.sock.sendall(self.cp.push(key, val)) 
+        self.sock.send(self.cp.push(key, val)) 
+        ret = self.sock.recv()
         
     def push_multi(self, kvdict):
         self.sock.sendall(self.cp.push_multi(kvdict))
     
     def pull(self, key):
-        self.sock.sendall(self.cp.pull(key))
-        res = cPickle.loads(self.sock.recv(4096))
+        self.sock.send(self.cp.pull(key))
+        res = cPickle.loads(self.sock.recv())
         return res
     
     def pull_multi(self, keylst):
@@ -82,7 +80,7 @@ class cservice(Exception):
         return res
     
     def inc(self, key, delta):
-        self.sock.sendall(self.cp.inc(key, delta))
+        self.sock.send(self.cp.inc(key, delta))
      
     def pushs(self, key):
         self.sock.sendall(self.cp.pushs(key))
