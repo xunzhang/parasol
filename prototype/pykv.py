@@ -5,13 +5,19 @@
 # python demo version of key-value store in memory
 #
 
+import threading
+
+op_mutex = threading.Lock()
+
 class pykv(Exception):
 
     def __init__(self):
         self.pdict = {}
 
     def set(self, key, val):
+        #op_mutex.acquire()
         self.pdict[key] = val
+        #op_mutex.release()
         return True
    
     def set_multi(self, kvdict):
@@ -19,7 +25,10 @@ class pykv(Exception):
             self.set(key, kvdict[key])
 
     def get(self, key):
-        return self.pdict.get(key)
+        #op_mutex.acquire()
+        v = self.pdict.get(key)
+        #op_mutex.release()
+        return v
     
     def get_multi(self, keylst):
         lst = []

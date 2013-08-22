@@ -58,8 +58,8 @@ class cservice(Exception):
         context = zmq.Context()
         self.sock = context.socket(zmq.REQ)
         initst = 'tcp://' + host + ':' + port
-        self.sock.connect("tcp://localhost:7907")
-        #self.sock.connect(initst)
+        #self.sock.connect("tcp://localhost:7907")
+        self.sock.connect(initst)
         self.cp = cproxy(0)
  
     def push(self, key, val):

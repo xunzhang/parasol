@@ -44,7 +44,6 @@ class sproxy(Exception):
         if oplst[-1] != self.fd:
             print 'error'
             exit(0)
-
         if op == 'push':
             self.push(oplst[1], oplst[2])
         if op == 'push_multi':
