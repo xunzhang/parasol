@@ -30,10 +30,13 @@ from hash_ring import HashRing
 @output:
     matrix p and q
 '''
-def mf_kernel(r, p, q, k, rank, b, alpha = 0.0002, beta = 0.02, steps = 20, conv = 0.0001):
+def mf_kernel(r, p, q, k, rank, b, alpha = 0.0002, beta = 0.02, steps = 200, conv = 0.0001):
+    import random
     q = q.transpose()
+    data_container = zip(r.row, r.col, r.data)
+    random.shuffle(data_container)
     for it in xrange(steps):
-        for i, j, v in zip(r.row, r.col, r.data):
+        for i, j, v in data_container:
             spkey = 'p[' + str(i) + ',:]_' + str(rank / b)
             server1 = ring.get_node(spkey)
             p[i, :] = kvm[server1].pull(spkey)
@@ -49,26 +52,38 @@ def mf_kernel(r, p, q, k, rank, b, alpha = 0.0002, beta = 0.02, steps = 20, conv
             # only need to set p[i, :] and q[:, j]
             kvm[server1].update(spkey, deltap)
             kvm[server2].update(sqkey, deltaq)
-            p[i,:] = kvm[server1].pull(spkey)
-            q[:,j] = kvm[server2].pull(sqkey)
-        # check if convergent
-        esum = 0
-        for i, j, v in zip(r.row, r.col, r.data):
-            esum += (v - np.dot(p[i, :], q[:, j])) ** 2
-            for ki in xrange(k):
-                esum += (beta / 2) * (p[i][ki] ** 2 + q[ki][j] ** 2)
-        esum = comm.allreduce(esum, op = MPI.SUM)
-        if rank == 0:
-            print it
-            print 'esum is', esum
-        if esum < conv:
-            break
+            #p[i,:] = kvm[server1].pull(spkey)
+            #q[:,j] = kvm[server2].pull(sqkey)
+            # check if convergent
+            esum = 0
+            for i, j, v in data_container:
+                esum += (v - np.dot(p[i, :], q[:, j])) ** 2
+                for ki in xrange(k):
+                    esum += (beta / 2) * (p[i][ki] ** 2 + q[ki][j] ** 2)
+            #esum = comm.allreduce(esum, op = MPI.SUM)
+            if rank == 1:
+                print it
+                print 'esum is', esum, 'rank', rank
+            #if esum < conv:
+            #    break
+    comm.barrier()
+    # last pull p, may not calc on this procs, but can be calced on other procs
+    for i in xrange(p.shape[0]):
+        spkey = 'p[' + str(i) + ',:]_' + str(rank / b)
+        server1 = ring.get_node(spkey)
+        p[i, :] = kvm[server1].pull(spkey)
+    # last pull q
+    for j in xrange(q.shape[1]):
+        sqkey = 'q[:,' + str(j) + ']_' + str(rank % b)
+        server2 = ring.get_node(sqkey) 
+        q[:, j] = kvm[server2].pull(sqkey)
+    comm.barrier()
     return p, q.transpose()
 
 '''prepare for mf, init p and q, use mf_kernel to solve'''
-def matrix_factorization(r, k, rank, b):
-    u = r.shape[0]
-    i = r.shape[1]
+def matrix_factorization(r, u, i, k, rank, b):
+    #u = r.shape[0]
+    #i = r.shape[1]
     # init p & q
     p = np.random.rand(u, k)
     q = np.random.rand(i, k)
@@ -80,6 +95,7 @@ def matrix_factorization(r, k, rank, b):
       key = 'q[:,' + str(index) + ']_' + str(rank % b)
       server = ring.get_node(key)
       kvm[server].push(key, list(q[index, :]))
+    comm.barrier()
     # kernel mf solver
     mf_kernel(r, p, q, k, rank, b)
     return p, q
@@ -92,16 +108,22 @@ ring = HashRing(servers)
 if __name__ == '__main__':
     from mpi4py import MPI
     from crtblkmtx import ge_blkmtx 
+    from writer import output
     comm = MPI.COMM_WORLD
     rank = comm.Get_rank()
     a, b = npfact2D(4)
+    print a, b
     k = 20
     filename = '/home/xunzhang/xunzhang/Data/book_interest/testfile'
+    outputfn = '/home/xunzhang/xunzhang/result.csv'
     rmap, cmap, mtx = ge_blkmtx(filename, comm)
+    comm.barrier()
     kvm = [kv('localhost', '7907')]
     #kvm = [kv('localhost', '7907'), kv('localhost', '8907')]
     #kvm = [kv('localhost', '7907'), kv('localhost', '8907'), kv('localhost', '9907')]
-    print 'init done'
-    p, q = matrix_factorization(mtx, k, rank, b)
-    print mtx[56][65]
-    print np.dot(p, q.T)[17][46]
+    comm.barrier()
+    print 'init done', rank
+    p, q = matrix_factorization(mtx, len(rmap), len(cmap), k, rank, b)
+    print 'calc done', rank
+    bmtx = np.dot(p, q.T)
+    output(outputfn, rmap, cmap, bmtx, comm) 
