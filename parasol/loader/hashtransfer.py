@@ -23,7 +23,7 @@ def putlines(lines, np, fmt = 'usr', hashfunc = hashfoo):
   >>> lines = ['2\t4\t1\n', '4\t5\t2\n', '7\t6\t3\n', '9\t11\t4\n']
   >>> lst = putlines(lines, np)
   '''
-  from parallel import npfact2D
+  from parasol.utils.parallel import npfact2D
   npx, npy = npfact2D(np)
   lineslotslst = [[] for i in xrange(np)]
   for line in lines:

@@ -35,7 +35,7 @@ def ge_blkmtx(fl, comm, fmt = 'ussrt'):
   >>>   print mtx
   '''
   
-  from expand import expd_f_lst
+  from parasol.utils.expand import expd_f_lst
   from load import fns_partition
   from np_scheduler import scheduler_load, exchange
   from hashtransfer import putlines

@@ -24,27 +24,34 @@ def writelines(rmap, cmap, bmtx, comm):
   comm.barrier()
   return fntmp
 
-def mergefiles(fntmp, outfile):
+def mergefiles(fntmp, outfile, comm):
   import glob
   fls = glob.glob(fntmp + '*')
-  f = open(outfile, 'wb')
-  for fl in fls:
-    ff = open(fl, 'rb')
-    for stf in ff:
-      f.write(stf)
+  rank = comm.Get_rank()
+  if rank == 0:
+    f = open(outfile, 'wb')
+    for fl in fls:
+      ff = open(fl, 'rb')
+      for stf in ff:
+        f.write(stf)
 
-def packfs(fntmp, outdir):
+def packfs(fntmp, outdir, comm):
   import os
   import glob
   fls = glob.glob(fntmp + '*')
+  cmd0 = 'rm -rf ' + outdir
   cmd1 = 'mkdir ' + outdir 
-  os.system(cmd1)
-  cmd2 = 'mv ' + fntmp + '* ' outdir
-  os.system(cmd2)
+  cmd2 = 'mv ' + fntmp + '* ' + outdir
+  rank = comm.Get_rank()
+  if rank == 0:
+    print cmd1
+    print cmd2
+    os.system(cmd1)
+    os.system(cmd2)
   
 def output(outfile, rmap, cmap, bmtx, comm, mergeflag = False):
   fntmp = writelines(rmap, cmap, bmtx, comm)
   if mergeflag:
     mergefiles(fntmp, outfile)
   else:
-    packfs(fntmp, outfile)
+    packfs(fntmp, outfile, comm)

@@ -39,7 +39,7 @@ def ind_mapping(slotslst, comm):
   >>>   print cm
   >>>   print slotslst
   '''
-  from parallel import npfact2D
+  from parasol.utils.parallel import npfact2D
   np = comm.Get_size()
   rank = comm.Get_rank()
 

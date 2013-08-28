@@ -1,6 +1,6 @@
 #! /usr/bin/python
 #
-# http://amix.dk/blog/viewEntry/19367
+# steal from http://amix.dk/blog/viewEntry/19367
 #
 import md5
 

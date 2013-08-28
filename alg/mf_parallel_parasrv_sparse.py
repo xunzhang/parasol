@@ -6,31 +6,13 @@
 #
 import time
 import sys
-sys.path.append('../prototype/')
-sys.path.append('/home/xunzhang/xunzhang/Data/book_interest/')
-sys.path.append('../../xz_utils/')
 import numpy as np
-from parallel import *
-from clt import kv
+from parasol.utils.parallel import *
+from parasol.clt import kv
 from scipy import sparse
 from hash_ring import HashRing
 
-'''
-@input:
-    r    : matrix to be factorized, u x i
-    dimu : dim0 of r
-    dimi : dim1 of r
-    p    : matrix u x k reflect user to features
-    q    : matrix i x k reflect item to features
-    k    : number of latent features
-    alpha: learning rate
-    beta : regularization para
-    steps: maximum number of steps to perform opt
-    conv : convergence bound
-@output:
-    matrix p and q
-'''
-def mf_kernel(r, p, q, k, rank, b, alpha = 0.0002, beta = 0.02, steps = 200, conv = 0.0001):
+def mf_kernel(r, p, q, k, rank, b, alpha = 0.0002, beta = 0.02, steps = 20, conv = 0.0001):
     import random
     q = q.transpose()
     data_container = zip(r.row, r.col, r.data)
@@ -107,15 +89,17 @@ ring = HashRing(servers)
 
 if __name__ == '__main__':
     from mpi4py import MPI
-    from crtblkmtx import ge_blkmtx 
-    from writer import output
+    from parasol.loader.crtblkmtx import ge_blkmtx 
+    from parasol.writer.writer import output
+    from optparse import OptionParser
+    import json
     comm = MPI.COMM_WORLD
     rank = comm.Get_rank()
-    a, b = npfact2D(4)
-    print a, b
-    k = 20
-    filename = '/home/xunzhang/xunzhang/Data/book_interest/testfile'
-    outputfn = '/home/xunzhang/xunzhang/result.csv'
+    para_cfg = json.loads(open('../cfg.json').read())
+    a, b = npfact2D(para_cfg['n'])
+    k = para_cfg['k']
+    filename = para_cfg['input']
+    outputfn = para_cfg['output']
     rmap, cmap, mtx = ge_blkmtx(filename, comm)
     comm.barrier()
     kvm = [kv('localhost', '7907')]
