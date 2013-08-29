@@ -3,6 +3,15 @@
 # parallel utils
 #
 
+def mm_mult(ml, mr):
+'''
+line by line, from left to right
+'''
+  import numpy as np
+  for i in xrange(ml.shape[0]):
+    for j in xrange(mr.shape[1]):
+      yield np.dot(ml[i], mr[:, j])
+  
 def npfactx(np):
   return np, 1
   

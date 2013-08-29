@@ -3,7 +3,7 @@
 # Write (i, j, v) results to output file
 #
 
-def writelines(rmap, cmap, bmtx, comm):
+def writelines(rmap, cmap, bmtx, dim1, comm):
   import time
   from mpi4py import MPI
   rank = comm.Get_rank()
@@ -16,11 +16,21 @@ def writelines(rmap, cmap, bmtx, comm):
   fn = fntmp + str(rank)
   f = open(fn, 'wb')
   content = '' 
-  for i in xrange(bmtx.shape[0]):
-    for j in xrange(bmtx.shape[1]):
-      content = ','.join([str(rmap[i]), str(cmap[j]), str(bmtx[i][j])])
-      content = content + '\n'
-      f.write(content)
+  rowcnt = 0
+  colcnt = 0
+  for stf in bmtx:
+    content = ','.join([str(rmap[rowcnt]), str(cmap[colcnt]), str(stf)])
+    content = content + '\n'
+    f.write(content)
+    colcnt += 1
+    if colcnt == dim1:
+      rowcnt += 1
+      colcnt = 0
+  #for i in xrange(dim0):
+  #  for j in xrange(dim1):
+  #    content = ','.join([str(rmap[i]), str(cmap[j]), str(bmtx[i][j])])
+  #    content = content + '\n'
+  #    f.write(content)
   comm.barrier()
   return fntmp
 
@@ -49,8 +59,8 @@ def packfs(fntmp, outdir, comm):
     os.system(cmd1)
     os.system(cmd2)
   
-def output(outfile, rmap, cmap, bmtx, comm, mergeflag = False):
-  fntmp = writelines(rmap, cmap, bmtx, comm)
+def output(outfile, rmap, cmap, bmtx, dim1, comm, mergeflag = False):
+  fntmp = writelines(rmap, cmap, bmtx, dim1, comm)
   if mergeflag:
     mergefiles(fntmp, outfile)
   else:
