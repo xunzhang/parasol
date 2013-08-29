@@ -14,7 +14,9 @@ from hash_ring import HashRing
 
 def mf_kernel(r, p, q, k, rank, b, alpha = 0.0002, beta = 0.02, steps = 20, conv = 0.0001):
     import random
+    #from itertools import izip
     q = q.transpose()
+    #data_container = izip(r.row, r.col, r.data)
     data_container = zip(r.row, r.col, r.data)
     random.shuffle(data_container)
     for it in xrange(steps):
@@ -95,7 +97,7 @@ if __name__ == '__main__':
     import json
     comm = MPI.COMM_WORLD
     rank = comm.Get_rank()
-    para_cfg = json.loads(open('../cfg.json').read())
+    para_cfg = json.loads(open('mf_cfg.json').read())
     a, b = npfact2D(para_cfg['n'])
     k = para_cfg['k']
     filename = para_cfg['input']
@@ -109,5 +111,6 @@ if __name__ == '__main__':
     print 'init done', rank
     p, q = matrix_factorization(mtx, len(rmap), len(cmap), k, rank, b)
     print 'calc done', rank
-    bmtx = np.dot(p, q.T)
-    output(outputfn, rmap, cmap, bmtx, comm) 
+    #bmtx = np.dot(p, q.T)
+    bmtx_it = mm_mult(p. q.T)
+    output(outputfn, rmap, cmap, bmtx_it, q.shape[0], comm) 
