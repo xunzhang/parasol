@@ -1,0 +1,11 @@
+[
+{"node" : "dwalin", "port" : "7907"},
+{"node" : "balin", "port" : "7907"},
+{"node" : "beater1", "port" : "7907"},
+{"node" : "beater2", "port" : "7907"},
+{"node" : "beater3", "port" : "7907"},
+{"node" : "beater4", "port" : "7907"},
+{"node" : "beater5", "port" : "7907"},
+{"node" : "beater6", "port" : "7907"},
+]
+

@@ -13,7 +13,7 @@ def writelines(rmap, cmap, bmtx, dim1, comm):
   if rank == 0:
     fntmp = '/tmp/' + str(time.time()) + '_rank_'
   fntmp = comm.bcast(fntmp, root = 0) 
-  fn = fntmp + str(rank)
+  fn = fntmp + str(rank) + '.csv'
   f = open(fn, 'wb')
   content = '' 
   rowcnt = 0

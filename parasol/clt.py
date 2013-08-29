@@ -7,16 +7,17 @@ import zmq
 
 class kv(Exception):
     
-    def __init__(self, host, port):
+    def __init__(self, host, port, context):
         self.host = host
         self.port = port
         self.connnum = 0
         self.pushflag = False
         self.pullflag = False 
+        self.zmq_context = context
          
     def push(self, key, val):
         #if not self.pushflag:
-        self.pushconn = cservice(self.host, self.port)
+        self.pushconn = cservice(self.host, self.port, self.zmq_context)
         #    self.pushflag = True
         self.pushconn.push(key, val)
     
@@ -25,7 +26,7 @@ class kv(Exception):
         conn.push_multi(kvdict)
           
     def pull(self, key):
-        conn = cservice(self.host, self.port)
+        conn = cservice(self.host, self.port, self.zmq_context)
         return conn.pull(key)
     
     def pull_multi(self, keylst):
@@ -33,7 +34,7 @@ class kv(Exception):
         return conn.pull_multi(keylst)
     
     def update(self, key, delta):
-        conn = cservice(self.host, self.port)
+        conn = cservice(self.host, self.port, self.zmq_context)
         return conn.inc(key, delta)
      
     def pushs(self, key):
@@ -54,8 +55,8 @@ class kv(Exception):
         
 class cservice(Exception):
     
-    def __init__(self, host, port):
-        context = zmq.Context()
+    def __init__(self, host, port, context):
+        #context = zmq.Context()
         self.sock = context.socket(zmq.REQ)
         initst = 'tcp://' + host + ':' + port
         #self.sock.connect("tcp://localhost:7907")
@@ -81,7 +82,8 @@ class cservice(Exception):
     
     def inc(self, key, delta):
         self.sock.send(self.cp.inc(key, delta))
-     
+        ret = self.sock.recv()
+
     def pushs(self, key):
         self.sock.sendall(self.cp.pushs(key))
         res = cPickle.loads(self.sock.recv(4096))
