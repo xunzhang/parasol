@@ -2,5 +2,6 @@
 "k" : 20,
 "n" : 2,
 "input" : "/home/xunzhang/xunzhang/Data/book_interest/testfile",
-"output" : "/home/xunzhang/xunzhang/20130829results"
+"outputp" : "/home/xunzhang/xunzhang/resultp",
+"outputq" : "/home/xunzhang/xunzhang/resultq"
 }

@@ -3,9 +3,8 @@
 # Write (i, j, v) results to output file
 #
 
-def writelines(rmap, cmap, bmtx, dim1, comm):
+def writelinesvec(maps, vec, k, comm):
   import time
-  from mpi4py import MPI
   rank = comm.Get_rank()
   comm.barrier()
   outlst = []
@@ -13,7 +12,28 @@ def writelines(rmap, cmap, bmtx, dim1, comm):
   if rank == 0:
     fntmp = '/tmp/' + str(time.time()) + '_rank_'
   fntmp = comm.bcast(fntmp, root = 0) 
-  fn = fntmp + str(rank) + '.csv'
+  fn = fntmp + str(rank)
+  f = open(fn, 'wb')
+  content = ''
+  for i in xrange(vec.shape[0]):
+    idstr = str(maps[i]) + ':'
+    line = [str(j) for j in vec[i, :]]
+    valstr = '|'.join(line)
+    content = idstr + valstr + '\n'
+    f.write(content)
+  comm.barrier()
+  return fntmp
+
+def writelinesmtx(rmap, cmap, bmtx, dim1, comm):
+  import time
+  rank = comm.Get_rank()
+  comm.barrier()
+  outlst = []
+  fntmp = ''
+  if rank == 0:
+    fntmp = '/tmp/' + str(time.time()) + '_rank_'
+  fntmp = comm.bcast(fntmp, root = 0) 
+  fn = fntmp + str(rank)
   f = open(fn, 'wb')
   content = '' 
   rowcnt = 0
@@ -58,10 +78,17 @@ def packfs(fntmp, outdir, comm):
     print cmd2
     os.system(cmd1)
     os.system(cmd2)
-  
-def output(outfile, rmap, cmap, bmtx, dim1, comm, mergeflag = False):
-  fntmp = writelines(rmap, cmap, bmtx, dim1, comm)
+
+def outputvec(outfile, maps, vec, k, comm, mergeflag = False):
+  fntmp = writelinesvec(maps, vec, k, comm)
   if mergeflag:
-    mergefiles(fntmp, outfile)
+    mergefiles(fntmp, outfile, comm)
+  else:
+    packfs(fntmp, outfile, comm)  
+  
+def outputmtx(outfile, rmap, cmap, bmtx, dim1, comm, mergeflag = False):
+  fntmp = writelinesmtx(rmap, cmap, bmtx, dim1, comm)
+  if mergeflag:
+    mergefiles(fntmp, outfile, comm)
   else:
     packfs(fntmp, outfile, comm)
