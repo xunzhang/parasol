@@ -11,6 +11,14 @@ from parasol.utils.parallel import *
 from parasol.clt import kv
 from scipy import sparse
 from hash_ring import HashRing
+from time import clock
+
+def calc_loss(r, p, q, k, beta = 0.02):
+    esum = 0
+    for i, j, v in zip(r.row, r.col, r.data):
+        esum += (v - np.dot(p[i, :], q[:, j])) ** 2
+        for ki in xrange(k):
+            esum += (beta / 2) * (p[i][ki] ** 2 + q[ki][j] ** 2)
 
 def mf_kernel(r, p, q, k, rank, b, alpha = 0.0002, beta = 0.02, steps = 20, conv = 0.0001):
     import random
@@ -20,8 +28,10 @@ def mf_kernel(r, p, q, k, rank, b, alpha = 0.0002, beta = 0.02, steps = 20, conv
     q = q.transpose()
     #data_container = izip(r.row, r.col, r.data)
     data_container = zip(r.row, r.col, r.data)
-    random.shuffle(data_container)
+    print 'data size is', len(data_container)
+    #random.shuffle(data_container)
     for it in xrange(steps):
+        print 'round', it
         if it != 0:
             for index in xrange(u):
                 key = 'p[' + str(index) + ',:]_' + str(rank / b)
@@ -31,13 +41,23 @@ def mf_kernel(r, p, q, k, rank, b, alpha = 0.0002, beta = 0.02, steps = 20, conv
                 key = 'q[:,' + str(index) + ']_' + str(rank % b)
                 server = ring.get_node(key)
                 q[:, index] = kvm[server].pull(key)
-
+        
+        print 'after'
+        start = clock()
+        random.shuffle(data_container)
+        end = clock()
+        print 'shuffle time is', end - start
+        
         for i, j, v in data_container:
             eij = v - np.dot(p[i, :], q[:, j])
             for ki in xrange(k):
                 p[i][ki] += alpha * (2 * eij * q[ki][j] - beta * p[i][ki])
                 q[ki][j] += alpha * (2 * eij * p[i][ki] - beta * q[ki][j])
-
+        
+        print 'local done'
+        start = clock()
+        print 'calc time is', start - end
+         
         for index in xrange(u):
             key = 'p[' + str(index) + ',:]_' + str(rank / b)
             server = ring.get_node(key)
@@ -49,7 +69,12 @@ def mf_kernel(r, p, q, k, rank, b, alpha = 0.0002, beta = 0.02, steps = 20, conv
             deltaq = list(q[:, index] - kvm[server].pull(key))
             kvm[server].update(key, deltaq)
         
+        #comm.barrier()
+        end = clock()
+        print 'communication time is', end - start
+         
     comm.barrier()
+    start = clock()
     # last pull p, may not calc on this procs, but can be calced on other procs
     for i in xrange(p.shape[0]):
         spkey = 'p[' + str(i) + ',:]_' + str(rank / b)
@@ -61,6 +86,8 @@ def mf_kernel(r, p, q, k, rank, b, alpha = 0.0002, beta = 0.02, steps = 20, conv
         server2 = ring.get_node(sqkey) 
         q[:, j] = kvm[server2].pull(sqkey)
     comm.barrier()
+    end = clock()
+    print 'last pull time is', end - start
     return p, q.transpose()
 
 '''prepare for mf, init p and q, use mf_kernel to solve'''
@@ -102,7 +129,8 @@ if __name__ == '__main__':
     a, b = npfact2D(para_cfg['n'])
     k = para_cfg['k']
     filename = para_cfg['input']
-    outputfn = para_cfg['output']
+    outputfnp = para_cfg['outputp']
+    outputfnq = para_cfg['outputq']
     rmap, cmap, mtx = ge_blkmtx(filename, comm)
     comm.barrier()
     kvm = [kv('localhost', '7907')]
@@ -112,6 +140,10 @@ if __name__ == '__main__':
     print 'init done', rank
     p, q = matrix_factorization(mtx, len(rmap), len(cmap), k, rank, b)
     print 'calc done', rank
+    esum = calc_loss(mtx, p, q.T, k)
+    esum = comm.allreduce(esum, op = MPI.SUM)
     #bmtx = np.dot(p, q.T)
-    bmtx_it = mm_mult(p, q.T)
-    output(outputfn, rmap, cmap, bmtx_it, q.shape[0], comm) 
+    #bmtx_it = mm_mult(p, q.T)
+    #output(outputfn, rmap, cmap, bmtx_it, q.shape[0], comm) 
+    outputvec(outputfnp, rmap, p, k, comm)
+    outputvec(outputfnq, cmap, p, k, comm)
