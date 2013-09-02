@@ -1,6 +1,7 @@
 import sys 
 import socket 
 import cPickle
+import msgpack as mp
 from pykv import pykv
 from cproxy import cproxy
 import zmq
@@ -11,14 +12,15 @@ class kv(Exception):
         self.host = host
         self.port = port
         self.connnum = 0
+        self.zmq_context = context
         self.pushflag = False
         self.pullflag = False 
-        self.zmq_context = context
+        self.updateflag = False
          
     def push(self, key, val):
-        #if not self.pushflag:
-        self.pushconn = cservice(self.host, self.port, self.zmq_context)
-        #    self.pushflag = True
+        if not self.pushflag:
+            self.pushconn = cservice(self.host, self.port, self.zmq_context)
+            self.pushflag = True
         self.pushconn.push(key, val)
     
     def push_multi(self, kvdict):
@@ -26,16 +28,20 @@ class kv(Exception):
         conn.push_multi(kvdict)
           
     def pull(self, key):
-        conn = cservice(self.host, self.port, self.zmq_context)
-        return conn.pull(key)
+        if not self.pullflag:
+            self.pullconn = cservice(self.host, self.port, self.zmq_context)
+            self.pullflag = True
+        return self.pullconn.pull(key)
     
     def pull_multi(self, keylst):
         conn = cservice(self.host, self.port)
         return conn.pull_multi(keylst)
     
     def update(self, key, delta):
-        conn = cservice(self.host, self.port, self.zmq_context)
-        return conn.inc(key, delta)
+        if not self.updateflag:
+            self.updateconn = cservice(self.host, self.port, self.zmq_context)
+            self.updateflag = True
+        return self.updateconn.inc(key, delta)
      
     def pushs(self, key):
         conn = cservice(self.host, self.port)
@@ -57,7 +63,8 @@ class cservice(Exception):
     
     def __init__(self, host, port, context):
         #context = zmq.Context()
-        self.sock = context.socket(zmq.REQ)
+        self.context = context
+        self.sock = self.context.socket(zmq.REQ)
         initst = 'tcp://' + host + ':' + port
         #self.sock.connect("tcp://localhost:7907")
         self.sock.connect(initst)
@@ -72,12 +79,14 @@ class cservice(Exception):
     
     def pull(self, key):
         self.sock.send(self.cp.pull(key))
-        res = cPickle.loads(self.sock.recv())
+        #res = cPickle.loads(self.sock.recv())
+        res = mp.unpackb(self.sock.recv())
         return res
     
     def pull_multi(self, keylst):
         self.sock.sendall(self.cp.pull_multi(keylst))
-        res = cPickle.loads(self.sock.recv(4096))
+        #res = cPickle.loads(self.sock.recv(4096))
+        res = mp.unpackb(self.sock.recv())
         return res
     
     def inc(self, key, delta):
@@ -86,12 +95,14 @@ class cservice(Exception):
 
     def pushs(self, key):
         self.sock.sendall(self.cp.pushs(key))
-        res = cPickle.loads(self.sock.recv(4096))
+        #res = cPickle.loads(self.sock.recv(4096))
+        res = mp.unpackb(self.sock.recv())
         return res
 
     def pulls(self, key, val, uniq):
         self.sock.sendall(self.cp.pulls(key, val, uniq))
-        res = cPickle.loads(self.sock.recv(4096))
+        #res = cPickle.loads(self.sock.recv(4096))
+        res = mp.unpackb(self.sock.recv())
         return res
     
     def remove(self, key):

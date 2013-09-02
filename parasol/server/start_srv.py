@@ -1,5 +1,6 @@
 import socket
 import cPickle
+import msgpack as mp
 from pykv import pykv
 from sproxy import sproxy
 import zmq
@@ -11,20 +12,21 @@ def rselect(gset):
 if __name__ == '__main__':
   context = zmq.Context()
   sock = context.socket(zmq.REP)
-  global_index = set(range(100))
-  if socket.gethostname() == 'dwalin':
-    sock.bind("tcp://*:8907")
-    msg = sock.recv()
-    kvpoll_index = rselect(global_index)
-    sock.send(str(kvpoll_index))
-    global_index.remove(kvpoll_index)
+  #global_index = set(range(100))
+  #if socket.gethostname() == 'dwalin':
+  #  sock.bind("tcp://*:8907")
+  #  msg = sock.recv()
+  #  kvpoll_index = rselect(global_index)
+  #  sock.send(str(kvpoll_index))
+  #  global_index.remove(kvpoll_index)
   # tell all srv global_index
   
   sock.bind("tcp://*:7907")
   while True:
     message = sock.recv() 
     l = message.split('\t')
-    oplst = [cPickle.loads(ii) for ii in l]
+    #oplst = [cPickle.loads(ii) for ii in l]
+    oplst = [mp.unpackb(ii) for ii in l]
     op = oplst[0]
     sp = sproxy(0)
     if op == 'push':
@@ -34,7 +36,8 @@ if __name__ == '__main__':
     if op == 'pull':
         v = sp.pull(oplst[1])
     if v or v == 0:
-        content = cPickle.dumps(v)     
+        #content = cPickle.dumps(v)     
+        content = mp.packb(v)
         sock.send(content)
     else:
         sock.send('ok')

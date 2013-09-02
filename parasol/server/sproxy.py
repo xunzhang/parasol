@@ -1,6 +1,7 @@
 #! /usr/bin/python
 
 import cPickle
+import msgpack as mp
 from pykv import pykv
 from config import kvpoll_lst 
 
@@ -38,7 +39,8 @@ class sproxy(Exception):
     
     def parser(self, st):
         l = st.split('\t')
-        oplst = [cPickle.loads(ii) for ii in l]
+        #oplst = [cPickle.loads(ii) for ii in l]
+        oplst = [mp.unpackb(ii) for ii in l]
         op = oplst[0]
 
         if oplst[-1] != self.fd:
