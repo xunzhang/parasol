@@ -19,25 +19,26 @@ def calc_loss(r, p, q, k, beta = 0.02):
         esum += (v - np.dot(p[i, :], q[:, j])) ** 2
         for ki in xrange(k):
             esum += (beta / 2) * (p[i][ki] ** 2 + q[ki][j] ** 2)
+    return esum
 
-def mf_kernel(r, p, q, k, rank, b, alpha = 0.0002, beta = 0.02, steps = 20, conv = 0.0001):
+def mf_kernel(r, p, q, k, rank, b, alpha = 0.0002, beta = 0.02, rounds = 100, conv = 0.0001):
     import random
     #from itertools import izip
-    u = p.shape[0]
-    i = q.shape[0]
+    pl_size = p.shape[0]
+    ql_size = q.shape[0]
     q = q.transpose()
     #data_container = izip(r.row, r.col, r.data)
     data_container = zip(r.row, r.col, r.data)
     print 'data size is', len(data_container)
     #random.shuffle(data_container)
-    for it in xrange(steps):
+    for it in xrange(rounds):
         print 'round', it
         if it != 0:
-            for index in xrange(u):
+            for index in xrange(pl_size):
                 key = 'p[' + str(index) + ',:]_' + str(rank / b)
                 server = ring.get_node(key)
                 p[index, :] = kvm[server].pull(key)
-            for index in xrange(i):
+            for index in xrange(ql_size):
                 key = 'q[:,' + str(index) + ']_' + str(rank % b)
                 server = ring.get_node(key)
                 q[:, index] = kvm[server].pull(key)
@@ -58,12 +59,12 @@ def mf_kernel(r, p, q, k, rank, b, alpha = 0.0002, beta = 0.02, steps = 20, conv
         start = clock()
         print 'calc time is', start - end
          
-        for index in xrange(u):
+        for index in xrange(pl_size):
             key = 'p[' + str(index) + ',:]_' + str(rank / b)
             server = ring.get_node(key)
             deltap = list(p[index, :] - kvm[server].pull(key))
             kvm[server].update(key, deltap)
-        for index in xrange(i):
+        for index in xrange(ql_size):
             key = 'q[:,' + str(index) + ']_' + str(rank % b)
             server = ring.get_node(key)
             deltaq = list(q[:, index] - kvm[server].pull(key))
@@ -120,7 +121,7 @@ ring = HashRing(servers)
 if __name__ == '__main__':
     from mpi4py import MPI
     from parasol.loader.crtblkmtx import ge_blkmtx 
-    from parasol.writer.writer import output
+    from parasol.writer.writer import outputvec
     from optparse import OptionParser
     import json
     comm = MPI.COMM_WORLD
@@ -141,9 +142,11 @@ if __name__ == '__main__':
     p, q = matrix_factorization(mtx, len(rmap), len(cmap), k, rank, b)
     print 'calc done', rank
     esum = calc_loss(mtx, p, q.T, k)
+    print esum
+    comm.barrier()
     esum = comm.allreduce(esum, op = MPI.SUM)
     #bmtx = np.dot(p, q.T)
     #bmtx_it = mm_mult(p, q.T)
     #output(outputfn, rmap, cmap, bmtx_it, q.shape[0], comm) 
     outputvec(outputfnp, rmap, p, k, comm)
-    outputvec(outputfnq, cmap, p, k, comm)
+    outputvec(outputfnq, cmap, q, k, comm)

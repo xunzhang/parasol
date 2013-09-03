@@ -1,15 +1,14 @@
 #! /usr/bin/python
 
-import cPickle
-import numpy as np
+#import cPickle
 import msgpack as mp
 
 class cproxy(Exception):
 
     def __init__(self, fd):
         self.fd = fd
-        self.sfd = ''
-        self.sfd = self.sfd.join(['I', str(self.fd), '\n.'])
+        #self.sfd = ''
+        #self.sfd = self.sfd.join(['I', str(self.fd), '\n.'])
     
     def glue(self, opname, *args):
         #sop = cPickle.dumps(opname)
@@ -19,10 +18,10 @@ class cproxy(Exception):
             #spara += cPickle.dumps(arg)
             spara += mp.packb(arg)
             # joint with '\t'
-            spara += '\t'
+            spara += 'parasol'
         result = ''
         #result = result.join([sop, '\t', spara, self.sfd])
-        result = result.join([sop, '\t', spara, mp.packb('0')])
+        result = result.join([sop, 'parasol', spara, mp.packb('0')])
         return result
         
     def push(self, key, val):
@@ -52,7 +51,9 @@ class cproxy(Exception):
     def clear(self):
         return self.glue('clear')        
 
+
 if __name__ == '__main__':
+    import numpy as np
     # client proxy to call
     obj = cproxy(7)
     st = obj.push('hello', 5)

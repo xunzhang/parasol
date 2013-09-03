@@ -1,5 +1,7 @@
+#! /usr/bin/python
+
 import socket
-import cPickle
+#import cPickle
 import msgpack as mp
 from pykv import pykv
 from sproxy import sproxy
@@ -24,7 +26,7 @@ if __name__ == '__main__':
   sock.bind("tcp://*:7907")
   while True:
     message = sock.recv() 
-    l = message.split('\t')
+    l = message.split('parasol')
     #oplst = [cPickle.loads(ii) for ii in l]
     oplst = [mp.unpackb(ii) for ii in l]
     op = oplst[0]

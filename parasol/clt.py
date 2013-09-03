@@ -1,72 +1,87 @@
-import sys 
-import socket 
-import cPickle
+import zmq
+#import cPickle
 import msgpack as mp
 from pykv import pykv
 from cproxy import cproxy
-import zmq
 
 class kv(Exception):
     
-    def __init__(self, host, port, context):
+    def __init__(self, host, port):
         self.host = host
         self.port = port
         self.connnum = 0
-        self.zmq_context = context
         self.pushflag = False
         self.pullflag = False 
         self.updateflag = False
+        self.push_multiflag = False
+        self.pull_multiflag = False
+        self.pushsflag = False
+        self.pullsflag = False
+        self.removeflag =False
+        self.clearflag = False
          
     def push(self, key, val):
         if not self.pushflag:
-            self.pushconn = cservice(self.host, self.port, self.zmq_context)
+            self.pushconn = cservice(self.host, self.port)
             self.pushflag = True
         self.pushconn.push(key, val)
     
     def push_multi(self, kvdict):
-        conn = cservice(self.host, self.port)
-        conn.push_multi(kvdict)
+        if not self.push_multiflag:
+            self.push_multiconn = cservice(self.host, self.port)
+            self.push_multiflag = True
+        self.push_multiconn.push_multi(kvdict)
           
     def pull(self, key):
         if not self.pullflag:
-            self.pullconn = cservice(self.host, self.port, self.zmq_context)
+            self.pullconn = cservice(self.host, self.port)
             self.pullflag = True
         return self.pullconn.pull(key)
     
     def pull_multi(self, keylst):
-        conn = cservice(self.host, self.port)
-        return conn.pull_multi(keylst)
+        if not self.pull_multiflag:
+            self.pull_multiconn = cservice(self.host, self.port)
+            self.pull_multiflag = True
+        return self.pull_multiconn.pull_multi(keylst)
     
     def update(self, key, delta):
         if not self.updateflag:
-            self.updateconn = cservice(self.host, self.port, self.zmq_context)
+            self.updateconn = cservice(self.host, self.port)
             self.updateflag = True
         return self.updateconn.inc(key, delta)
      
     def pushs(self, key):
-        conn = cservice(self.host, self.port)
-        return conn.pushs(key)
+        if not self.pushsflag:
+            self.pushsconn = cservice(self.host, self.port)
+            self.pushsflag = True
+        return self.pushsconn.pushs(key)
 
     def pulls(self, key, val, uniq):
-        conn = cservice(self.host, self.port)
+        if not self.pullsflag:
+            self.pullsconn = cservice(self.host, self.port)
+            self.pullsflag = True
         return conn.pulls(key, val, uniq)    
         
     def remove(self, key):
-        conn = cservice(self.host, self.port)
-        conn.remove(key)
+        if not self.removeflag:
+            self.removeconn = cservice(self.host, self.port)
+            self.removeflag = True
+        self.removeconn.remove(key)
         
     def clear(self):
-        conn = cservice(self.host, self.port)
-        conn.clear()
+        if not self.clearflag:
+            self.clearconn = cservice(self.host, self.port)
+            self.clearflag = True
+        self.clearconn.clear()
         
+
 class cservice(Exception):
-    
-    def __init__(self, host, port, context):
-        #context = zmq.Context()
-        self.context = context
-        self.sock = self.context.socket(zmq.REQ)
-        initst = 'tcp://' + host + ':' + port
+
+    def __init__(self, host, port):
+        context = zmq.Context()
+        self.sock = context.socket(zmq.REQ)
         #self.sock.connect("tcp://localhost:7907")
+        initst = 'tcp://' + host + ':' + port
         self.sock.connect(initst)
         self.cp = cproxy(0)
  

@@ -1,6 +1,6 @@
 #! /usr/bin/python
 
-import cPickle
+#import cPickle
 import msgpack as mp
 from pykv import pykv
 from config import kvpoll_lst 
@@ -38,7 +38,7 @@ class sproxy(Exception):
         kvpoll_lst[self.fd].finalize() 
     
     def parser(self, st):
-        l = st.split('\t')
+        l = st.split('parasol')
         #oplst = [cPickle.loads(ii) for ii in l]
         oplst = [mp.unpackb(ii) for ii in l]
         op = oplst[0]
