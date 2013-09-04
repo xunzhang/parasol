@@ -24,7 +24,7 @@ class bsmf(paralg):
         self.outq = self.para_cfg['outputq']
         
         # parameter 4 learning
-        self.alpha = 0.002
+        self.alpha = 0.0002
         self.beta = 0.02
         self.rounds = 5
 
