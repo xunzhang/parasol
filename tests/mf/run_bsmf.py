@@ -2,7 +2,7 @@
 
 if __name__ == '__main__':
     from mpi4py import MPI
-    from bsmf import bsmf
+    from parasol.alg.bsmf import bsmf
     comm = MPI.COMM_WORLD
     
     path = '/home/xunzhang/xunzhang/Proj/parasol/config/'
