@@ -46,3 +46,5 @@ class paralg(Exception):
     def solve(self):
         pass    
 
+    def packops(self):
+        pass

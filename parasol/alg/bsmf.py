@@ -23,30 +23,114 @@ class bsmf(paralg):
         self.outp = self.para_cfg['outputp']
         self.outq = self.para_cfg['outputq']
         
-        # parameter 4 learning
+        # set default parameter for learning
         self.alpha = 0.0002
         self.beta = 0.02
         self.rounds = 5
-
+         
+        alpha = self.para_cfg.get('alpha')
+        if alpha:
+            self.alpha = alpha
+        beta = self.para_cfg.get('beta')
+        if beta:
+            self.beta = beta
+        rounds = self.para_cfg.get('rounds')
+        if rounds:
+            self.rounds = rounds
+        
         # create folder
         paralg.crt_outfolder(self, self.outp)
         paralg.crt_outfolder(self, self.outq)
         self.comm.barrier()
-         
+    
+    def __stripoff(self, string, l, r):
+        return string.strip(l).strip(r)
+ 
+    def __pack_op_1(self, sz1, sz2, ind):
+        # for p 
+        pdict_dict = {} # for push
+        plst_dict = {} # for pull
+        for i in xrange(self.srv_sz):
+            pdict_dict[i] = {}
+            plst_dict[i] = []
+        if ind == 'push': 
+            # bundle
+            for index in xrange(sz1):
+                key = 'p[' + str(index) + ',:]_' + str(self.rank / self.b)
+                server = self.ring.get_node(key)
+                pdict_dict[server][key] = list(self.p[index, :])
+            # real push
+            for i in xrange(self.srv_sz):
+                if pdict_dict[i]:
+                    self.kvm[i].push_multi(pdict_dict[i])
+        if ind = 'pull':
+            for index in xrange(sz1):
+                key = 'p[' + str(index) + ',:]_' + str(self.rank / self.b)
+                server = self.ring.get_node(key)
+                plst_dict[server].append(key)
+            pkeys = []
+            ptmp = []
+            for i in xrange(self.srv_sz):
+                if plst_dict[i]:
+                    ptmp.append(self.kvm[i].pull_multi(plst_dict[i]))
+                    for ii in plst_dict[i]:
+                        pkeys.append(ii)
+            for i in xrange(len(pkeys)):
+                index = self.stripoff(pkeys[i], 'p[', ',:]_' + str(self.rank / self.b))
+                self.p[index, :] = ptmp[i]
+        # for q 
+        qdict_dict = {}
+        qlst_dict = {}
+        for i in xrange(self.srv_sz):
+            qdict_dict[i] = {}
+            qlst_dict[i] = []
+        if ind == 'push': 
+            # bundle
+            for index in xrange(sz2):
+                key = 'q[:,' + str(index) + ']_' + str(self.rank % self.b)
+                server = self.ring.get_node(key)
+                qdict_dict[server][key] = list(self.q[:, index])
+            # real push
+            for i in xrange(self.srv_sz):
+                if qdict_dict[i]:
+                    self.kvm[i].push_multi(qdict_dict[i])
+        if ind = 'pull':
+            for index in xrange(sz2):
+                key = 'q[:,' + str(index) + ']_' + str(self.rank % self.b)
+                server = self.ring.get_node(key)
+                qlst_dict[server].append(key)
+            qkeys = []
+            qtmp = []
+            for i in xrange(self.srv_sz):
+                if qlst_dict[i]:
+                    qtmp.append(self.kvm[i].pull_multi(qlst_dict[i]))
+                    for ii in qlst_dict[i]:
+                        qkeys.append(ii)
+            for i in xrange(len(qkeys)):
+                index = self.stripoff(pkeys[i], 'q[:,', ']_' + str(self.rank % self.b))
+                self.q[:, index] = qtmp[i]
+
     def __group_op_1(self, sz1, sz2, ind):
-        for index in xrange(sz1):
-            key = 'p[' + str(index) + ',:]_' + str(self.rank / self.b)
-            server = self.ring.get_node(key)
-            if ind == 'push':
+        if ind == 'push':
+            for index in xrange(sz1):
+                key = 'p[' + str(index) + ',:]_' + str(self.rank / self.b)
+                server = self.ring.get_node(key)
                 self.kvm[server].push(key, list(self.p[index, :]))
-            if ind == 'pull':
+        if ind == 'pull':
+            for index in xrange(sz1):
+                key = 'p[' + str(index) + ',:]_' + str(self.rank / self.b)
+                server = self.ring.get_node(key)
                 self.p[index, :] = self.kvm[server].pull(key)
-        for index in xrange(sz2):
-            key = 'q[:,' + str(index) + ']_' + str(self.rank % self.b)
-            server = self.ring.get_node(key)
-            if ind == 'push':
+             
+        if ind == 'push':
+            for index in xrange(sz2):
+                key = 'q[:,' + str(index) + ']_' + str(self.rank % self.b)
+                server = self.ring.get_node(key)
                 self.kvm[server].push(key, list(self.q[:, index]))
-            if ind == 'pull':
+        if ind == 'pull':
+            for index in xrange(sz2):
+                key = 'q[:,' + str(index) + ']_' + str(self.rank % self.b)
+                server = self.ring.get_node(key)
                 self.q[:, index] = self.kvm[server].pull(key)
                         
     def __group_op_2(self, sz1, sz2):

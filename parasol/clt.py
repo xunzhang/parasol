@@ -91,6 +91,7 @@ class cservice(Exception):
         
     def push_multi(self, kvdict):
         self.sock.sendall(self.cp.push_multi(kvdict))
+        ret = self.sock.recv()
     
     def pull(self, key):
         self.sock.send(self.cp.pull(key))
