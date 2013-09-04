@@ -21,7 +21,7 @@ def calc_loss(r, p, q, k, beta = 0.02):
             esum += (beta / 2) * (p[i][ki] ** 2 + q[ki][j] ** 2)
     return esum
 
-def mf_kernel(r, p, q, k, rank, b, alpha = 0.0002, beta = 0.02, rounds = 100, conv = 0.0001):
+def mf_kernel(r, p, q, k, rank, b, alpha = 0.0002, beta = 0.02, rounds = 5, conv = 0.0001):
     import random
     #from itertools import izip
     pl_size = p.shape[0]
@@ -119,6 +119,7 @@ servers = [0]
 ring = HashRing(servers)
 
 if __name__ == '__main__':
+    import os
     from mpi4py import MPI
     from parasol.loader.crtblkmtx import ge_blkmtx 
     from parasol.writer.writer import outputvec
@@ -148,5 +149,13 @@ if __name__ == '__main__':
     #bmtx = np.dot(p, q.T)
     #bmtx_it = mm_mult(p, q.T)
     #output(outputfn, rmap, cmap, bmtx_it, q.shape[0], comm) 
-    outputvec(outputfnp, rmap, p, k, comm)
-    outputvec(outputfnq, cmap, q, k, comm)
+    if rank == 0:
+        if not os.path.exists(outputfnp):
+            os.system('mkdir ' + outputfnp)
+        if not os.path.exists(outputfnq):
+            os.system('mkdir ' + outputfnq) 
+    comm.barrier()
+    if rank % b == 0:
+        outputvec(outputfnp, rmap, p, k, comm, '_mf')
+    if rank < b:
+        outputvec(outputfnq, cmap, q, k, comm, '_mf')

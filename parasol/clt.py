@@ -1,7 +1,7 @@
 import zmq
 #import cPickle
 import msgpack as mp
-from pykv import pykv
+from parasol.server.pykv import pykv
 from cproxy import cproxy
 
 class kv(Exception):
