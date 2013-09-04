@@ -10,7 +10,7 @@ import numpy as np
 from parasol.utils.parallel import *
 from parasol.clt import kv
 from scipy import sparse
-from hash_ring import HashRing
+from parasol.server.hash_ring import HashRing
 from time import clock
 
 def calc_loss(r, p, q, k, beta = 0.02):
@@ -82,7 +82,7 @@ def mf_kernel(r, p, q, k, rank, b, alpha = 0.0002, beta = 0.02, rounds = 5, conv
         server1 = ring.get_node(spkey)
         p[i, :] = kvm[server1].pull(spkey)
     # last pull q
-    for j in xrange(q.shape[1]):
+    for j in xrange(q.shape[0]):
         sqkey = 'q[:,' + str(j) + ']_' + str(rank % b)
         server2 = ring.get_node(sqkey) 
         q[:, j] = kvm[server2].pull(sqkey)
@@ -127,7 +127,7 @@ if __name__ == '__main__':
     import json
     comm = MPI.COMM_WORLD
     rank = comm.Get_rank()
-    para_cfg = json.loads(open('../config/mf_cfg.json').read())
+    para_cfg = json.loads(open('../config/bsmf_cfg.json').read())
     a, b = npfact2D(para_cfg['n'])
     k = para_cfg['k']
     filename = para_cfg['input']
@@ -143,9 +143,9 @@ if __name__ == '__main__':
     p, q = matrix_factorization(mtx, len(rmap), len(cmap), k, rank, b)
     print 'calc done', rank
     esum = calc_loss(mtx, p, q.T, k)
-    print esum
     comm.barrier()
     esum = comm.allreduce(esum, op = MPI.SUM)
+    print esum
     #bmtx = np.dot(p, q.T)
     #bmtx_it = mm_mult(p, q.T)
     #output(outputfn, rmap, cmap, bmtx_it, q.shape[0], comm) 
