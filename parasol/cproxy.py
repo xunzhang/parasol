@@ -35,7 +35,7 @@ class cproxy(Exception):
 
     def pull_multi(self, keylst):
         return self.glue('pull_multi', keylst)
-        
+         
     def inc(self, key, delta):
         return self.glue('inc', key, delta)
         

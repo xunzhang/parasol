@@ -26,7 +26,7 @@ class bsmf(paralg):
         # set default parameter for learning
         self.alpha = 0.0002
         self.beta = 0.02
-        self.rounds = 5
+        self.rounds = 3
          
         alpha = self.para_cfg.get('alpha')
         if alpha:
@@ -43,8 +43,8 @@ class bsmf(paralg):
         paralg.crt_outfolder(self, self.outq)
         self.comm.barrier()
     
-    def __stripoff(self, string, l, r):
-        return string.strip(l).strip(r)
+    def __stripoff(self, string, suffix, l, r):
+        return string.strip(suffix).strip(l).strip(r)
  
     def __pack_op_1(self, sz1, sz2, ind):
         # for p 
@@ -63,7 +63,7 @@ class bsmf(paralg):
             for i in xrange(self.srv_sz):
                 if pdict_dict[i]:
                     self.kvm[i].push_multi(pdict_dict[i])
-        if ind = 'pull':
+        if ind == 'pull':
             for index in xrange(sz1):
                 key = 'p[' + str(index) + ',:]_' + str(self.rank / self.b)
                 server = self.ring.get_node(key)
@@ -75,9 +75,11 @@ class bsmf(paralg):
                     ptmp.append(self.kvm[i].pull_multi(plst_dict[i]))
                     for ii in plst_dict[i]:
                         pkeys.append(ii)
+            print len(pkeys)
+            print len(ptmp)
             for i in xrange(len(pkeys)):
-                index = self.stripoff(pkeys[i], 'p[', ',:]_' + str(self.rank / self.b))
-                self.p[index, :] = ptmp[i]
+                index = int(self.__stripoff(pkeys[i], str(self.rank / self.b), 'p[', ',:]_'))
+                self.p[index, :] = ptmp[0][i]
         # for q 
         qdict_dict = {}
         qlst_dict = {}
@@ -94,7 +96,7 @@ class bsmf(paralg):
             for i in xrange(self.srv_sz):
                 if qdict_dict[i]:
                     self.kvm[i].push_multi(qdict_dict[i])
-        if ind = 'pull':
+        if ind == 'pull':
             for index in xrange(sz2):
                 key = 'q[:,' + str(index) + ']_' + str(self.rank % self.b)
                 server = self.ring.get_node(key)
@@ -107,27 +109,24 @@ class bsmf(paralg):
                     for ii in qlst_dict[i]:
                         qkeys.append(ii)
             for i in xrange(len(qkeys)):
-                index = self.stripoff(pkeys[i], 'q[:,', ']_' + str(self.rank % self.b))
-                self.q[:, index] = qtmp[i]
-
+                index = int(self.__stripoff(qkeys[i], str(self.rank % self.b), 'q[:,', ']_'))
+                self.q[:, index] = qtmp[0][i]
+    
     def __group_op_1(self, sz1, sz2, ind):
         if ind == 'push':
             for index in xrange(sz1):
                 key = 'p[' + str(index) + ',:]_' + str(self.rank / self.b)
                 server = self.ring.get_node(key)
                 self.kvm[server].push(key, list(self.p[index, :]))
-        if ind == 'pull':
-            for index in xrange(sz1):
-                key = 'p[' + str(index) + ',:]_' + str(self.rank / self.b)
-                server = self.ring.get_node(key)
-                self.p[index, :] = self.kvm[server].pull(key)
-             
-        if ind == 'push':
             for index in xrange(sz2):
                 key = 'q[:,' + str(index) + ']_' + str(self.rank % self.b)
                 server = self.ring.get_node(key)
                 self.kvm[server].push(key, list(self.q[:, index]))
         if ind == 'pull':
+            for index in xrange(sz1):
+                key = 'p[' + str(index) + ',:]_' + str(self.rank / self.b)
+                server = self.ring.get_node(key)
+                self.p[index, :] = self.kvm[server].pull(key)
             for index in xrange(sz2):
                 key = 'q[:,' + str(index) + ']_' + str(self.rank % self.b)
                 server = self.ring.get_node(key)
@@ -154,6 +153,7 @@ class bsmf(paralg):
             print 'round', it
             if it != 0:
                 self.__group_op_1(pl_sz, ql_sz, 'pull')
+                #self.__pack_op_1(pl_sz, ql_sz, 'pull')
             print 'after round pull'
             
             start = clock()
@@ -172,11 +172,12 @@ class bsmf(paralg):
             self.__group_op_2(pl_sz, ql_sz)
             end = clock()
             print 'communication time is', end - start
-
+    
         # last pull p, may not calc on this procs, but can be calced on others
         self.comm.barrier()
         start = clock()
         self.__group_op_1(pl_sz, ql_sz, 'pull')
+        #self.__pack_op_1(pl_sz, ql_sz, 'pull')
         self.comm.barrier()
         end = clock()
         print 'last pull time is', end - start
@@ -191,6 +192,7 @@ class bsmf(paralg):
         print 'i is', i
         print 'before init push'
         self.__group_op_1(u, i, 'push')
+        #self.__pack_op_1(u, i, 'push')
         print 'finish init push'
         self.comm.barrier()
 

@@ -88,10 +88,12 @@ class cservice(Exception):
     def push(self, key, val):
         self.sock.send(self.cp.push(key, val)) 
         ret = self.sock.recv()
-        
+        return ret
+                
     def push_multi(self, kvdict):
-        self.sock.sendall(self.cp.push_multi(kvdict))
+        self.sock.send(self.cp.push_multi(kvdict))
         ret = self.sock.recv()
+        return ret
     
     def pull(self, key):
         self.sock.send(self.cp.pull(key))
@@ -100,7 +102,7 @@ class cservice(Exception):
         return res
     
     def pull_multi(self, keylst):
-        self.sock.sendall(self.cp.pull_multi(keylst))
+        self.sock.send(self.cp.pull_multi(keylst))
         #res = cPickle.loads(self.sock.recv(4096))
         res = mp.unpackb(self.sock.recv())
         return res
@@ -108,6 +110,7 @@ class cservice(Exception):
     def inc(self, key, delta):
         self.sock.send(self.cp.inc(key, delta))
         ret = self.sock.recv()
+        return ret
 
     def pushs(self, key):
         self.sock.sendall(self.cp.pushs(key))

@@ -23,12 +23,13 @@ if __name__ == '__main__':
   #  global_index.remove(kvpoll_index)
   # tell all srv global_index
   
-  sock.bind("tcp://*:7907")
+  sock.bind("tcp://*:8907")
   while True:
     message = sock.recv() 
     l = message.split('parasol')
     #oplst = [cPickle.loads(ii) for ii in l]
     oplst = [mp.unpackb(ii) for ii in l]
+    print oplst
     op = oplst[0]
     sp = sproxy(0)
     if op == 'push':
@@ -37,6 +38,10 @@ if __name__ == '__main__':
         v = sp.inc(oplst[1], oplst[2])
     if op == 'pull':
         v = sp.pull(oplst[1])
+    if op == 'pull_multi':
+        v = sp.pull_multi(oplst[1])
+    if op == 'push_multi':
+        v = sp.push_multi(oplst[1])
     if v or v == 0:
         #content = cPickle.dumps(v)     
         content = mp.packb(v)

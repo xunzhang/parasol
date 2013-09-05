@@ -21,8 +21,9 @@ def calc_loss(r, p, q, k, beta = 0.02):
             esum += (beta / 2) * (p[i][ki] ** 2 + q[ki][j] ** 2)
     return esum
 
-def mf_kernel(r, p, q, k, rank, b, alpha = 0.0002, beta = 0.02, rounds = 5, conv = 0.0001):
+def mf_kernel(r, p, q, k, rank, b, alpha = 0.0002, beta = 0.02, rounds = 3, conv = 0.0001):
     import random
+    import copy
     #from itertools import izip
     pl_size = p.shape[0]
     ql_size = q.shape[0]
@@ -42,7 +43,9 @@ def mf_kernel(r, p, q, k, rank, b, alpha = 0.0002, beta = 0.02, rounds = 5, conv
                 key = 'q[:,' + str(index) + ']_' + str(rank % b)
                 server = ring.get_node(key)
                 q[:, index] = kvm[server].pull(key)
-        
+        pp = copy.deepcopy(p)
+        qq = copy.deepcopy(q) 
+         
         print 'after'
         start = clock()
         random.shuffle(data_container)
@@ -62,12 +65,14 @@ def mf_kernel(r, p, q, k, rank, b, alpha = 0.0002, beta = 0.02, rounds = 5, conv
         for index in xrange(pl_size):
             key = 'p[' + str(index) + ',:]_' + str(rank / b)
             server = ring.get_node(key)
-            deltap = list(p[index, :] - kvm[server].pull(key))
+            #deltap = list(p[index, :] - kvm[server].pull(key))
+            deltap = list(p[index, :] - pp[index, :])
             kvm[server].update(key, deltap)
         for index in xrange(ql_size):
             key = 'q[:,' + str(index) + ']_' + str(rank % b)
             server = ring.get_node(key)
-            deltaq = list(q[:, index] - kvm[server].pull(key))
+            #deltaq = list(q[:, index] - kvm[server].pull(key))
+            deltaq = list(q[:, index] - qq[:, index])
             kvm[server].update(key, deltaq)
         
         #comm.barrier()
@@ -135,7 +140,8 @@ if __name__ == '__main__':
     outputfnq = para_cfg['outputq']
     rmap, cmap, mtx = ge_blkmtx(filename, comm)
     comm.barrier()
-    kvm = [kv('localhost', '7907')]
+    #kvm = [kv('localhost', '8907')]
+    kvm = [kv('dwalin.intra.douban.com', '8907')]
     #kvm = [kv('localhost', '7907'), kv('localhost', '8907')]
     #kvm = [kv('localhost', '7907'), kv('localhost', '8907'), kv('localhost', '9907')]
     comm.barrier()
