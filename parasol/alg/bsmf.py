@@ -1,5 +1,6 @@
 # blocked matrix factorization using stochastic gradient 
 
+import sys
 import json
 import numpy as np
 from mpi4py import MPI
@@ -72,14 +73,17 @@ class bsmf(paralg):
             ptmp = []
             for i in xrange(self.srv_sz):
                 if plst_dict[i]:
+                    pkeys.append(plst_dict[i])
                     ptmp.append(self.kvm[i].pull_multi(plst_dict[i]))
-                    for ii in plst_dict[i]:
-                        pkeys.append(ii)
-            print len(pkeys)
-            print len(ptmp)
+                    #for ii in plst_dict[i]:
+                    #    pkeys.append(ii)
+            if len(pkeys) != len(ptmp):
+                print 'bug in __pack_op_1.'
+                sys.exit(1)
             for i in xrange(len(pkeys)):
-                index = int(self.__stripoff(pkeys[i], str(self.rank / self.b), 'p[', ',:]_'))
-                self.p[index, :] = ptmp[0][i]
+                for j in xrange(len(pkeys[i])):
+                    index = int(self.__stripoff(pkeys[i][j], str(self.rank / self.b), 'p[', ',:]_'))
+                    self.p[index, :] = ptmp[i][j]
         # for q 
         qdict_dict = {}
         qlst_dict = {}
@@ -105,12 +109,17 @@ class bsmf(paralg):
             qtmp = []
             for i in xrange(self.srv_sz):
                 if qlst_dict[i]:
+                    qkeys.append(qlst_dict[i])
                     qtmp.append(self.kvm[i].pull_multi(qlst_dict[i]))
-                    for ii in qlst_dict[i]:
-                        qkeys.append(ii)
+                    #for ii in qlst_dict[i]:
+                    #    qkeys.append(ii)
+            if len(qkeys) != len(qtmp):
+                print 'bug in __pack_op_1.'
+                sys.exit(1) 
             for i in xrange(len(qkeys)):
-                index = int(self.__stripoff(qkeys[i], str(self.rank % self.b), 'q[:,', ']_'))
-                self.q[:, index] = qtmp[0][i]
+                for j in xrange(len(qkeys[i])):
+                    index = int(self.__stripoff(qkeys[i][j], str(self.rank % self.b), 'q[:,', ']_'))
+                    self.q[:, index] = qtmp[i][j]
     
     def __group_op_1(self, sz1, sz2, ind):
         if ind == 'push':

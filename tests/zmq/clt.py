@@ -16,7 +16,7 @@ cnt = 0
 for i in xrange(100000):
     context = zmq.Context()
     sock = context.socket(zmq.REQ)
-    sock.connect('tcp://balin:7908')
+    sock.connect('tcp://dwalin.intra.douban.com:7908')
     print cnt
     cnt += 1
     key = 'p[' + str(i) + ',:]_' + '0'

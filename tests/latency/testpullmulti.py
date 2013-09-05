@@ -25,8 +25,8 @@ ptmp = []
 for i in xrange(srv_sz):
     if plst_dict[i]:
         ptmp.append(kvm[i].pull_multi(plst_dict[i]))
-        for ii in plst_dict[i]:
-            pkeys.append(ii)
+        pkeys.append(plst_dict[i])
 for i in xrange(len(pkeys)):
-    index = int(pkeys[i].strip('p_'))
-    a = ptmp[0][i]
+    for j in xrange(len(pkeys[i])):
+        index = int(pkeys[i][j].strip('p_'))
+        a = ptmp[i][j]
