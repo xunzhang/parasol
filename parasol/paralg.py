@@ -14,14 +14,12 @@ class paralg(Exception):
         # var
         self.comm = comm
         self.srv_cfg_file = srv_cfg_file
-
         # op
         self.ge_suffix()
         self.ge_kvm()
         self.srv_sz = len(self.kvm)
         self.servers = [i for i in xrange(self.srv_sz)]
         self.ring = HashRing(self.servers)
-
         # sync 
         self.comm.barrier() 
      
@@ -36,7 +34,7 @@ class paralg(Exception):
    
     def ge_kvm(self):
         self.kvm = [kv(srv['node'], srv['port']) for srv in json.loads(open(self.srv_cfg_file).read())]
-        self.__start_srvs()
+        #self.__start_srvs()
         
     def crt_outfolder(self, folder): 
         if self.comm.Get_rank() == 0:

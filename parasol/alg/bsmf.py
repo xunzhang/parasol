@@ -161,8 +161,8 @@ class bsmf(paralg):
         for it in xrange(self.rounds):
             print 'round', it
             if it != 0:
-                self.__group_op_1(pl_sz, ql_sz, 'pull')
-                #self.__pack_op_1(pl_sz, ql_sz, 'pull')
+                #self.__group_op_1(pl_sz, ql_sz, 'pull')
+                self.__pack_op_1(pl_sz, ql_sz, 'pull')
             print 'after round pull'
             
             start = clock()
@@ -185,8 +185,8 @@ class bsmf(paralg):
         # last pull p, may not calc on this procs, but can be calced on others
         self.comm.barrier()
         start = clock()
-        self.__group_op_1(pl_sz, ql_sz, 'pull')
-        #self.__pack_op_1(pl_sz, ql_sz, 'pull')
+        #self.__group_op_1(pl_sz, ql_sz, 'pull')
+        self.__pack_op_1(pl_sz, ql_sz, 'pull')
         self.comm.barrier()
         end = clock()
         print 'last pull time is', end - start
@@ -200,8 +200,8 @@ class bsmf(paralg):
         print 'u is', u
         print 'i is', i
         print 'before init push'
-        self.__group_op_1(u, i, 'push')
-        #self.__pack_op_1(u, i, 'push')
+        #self.__group_op_1(u, i, 'push')
+        self.__pack_op_1(u, i, 'push')
         print 'finish init push'
         self.comm.barrier()
 
