@@ -6,15 +6,16 @@ import numpy as np
 from mpi4py import MPI
 import random
 from time import clock
+from optparse import OptionParser
 from parasol.utils.parallel import npfact2D 
 from parasol.writer.writer import outputvec    
 from parasol.loader.crtblkmtx import ge_blkmtx
-from parasol.paralg import paralg
+from parasol.parasol import paralg
     
 class bsmf(paralg):
 
-    def __init__(self, comm, srv_cfg_file, para_cfg_file):
-        paralg.__init__(self, comm, srv_cfg_file)
+    def __init__(self, comm, srv_sz, para_cfg_file):
+        paralg.__init__(self, comm, srv_sz)
         self.rank = self.comm.Get_rank()
         self.para_cfg = json.loads(open(para_cfg_file).read())
         

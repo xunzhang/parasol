@@ -13,6 +13,8 @@ def is_availiable(port):
     tmp.close()
     if port in plst:
         return False
+    elif port == 7777:
+        return False
     else:
         return True
 

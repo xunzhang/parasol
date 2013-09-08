@@ -4,10 +4,11 @@ import sys
 import json
 import socket
 #import cPickle
+import zmq
 import msgpack as mp
+from optparse import OptionParser
 from pykv import pykv
 from sproxy import sproxy
-import zmq
 from parasol.utils.getport import getport
 
 def rselect(gset):
@@ -27,11 +28,16 @@ if __name__ == '__main__':
     # tell all srv global_index
     
     # return hostnames to clients
-    tmp = json.loads(open('../../config/parasol_cfg.json').read())
-    init_host = tmp['localhostname']
+    #tmp = json.loads(open('../../config/parasol_cfg.json').read())
+    #init_host = tmp['localhostname']
+    #init_host = 'dwalin'
+    optpar = OptionParser()
+    optpar.add_option('-h', '--host', action = 'store', type = 'string', default = 'dwalin', dest = 'init_host', help = 'local host for getting parasrv hostnames', metavar = 'dwalin')
+    options, args = optpar.parse_args()
+     
     context_init = zmq.Context()
     sock_init = context.socket(zmq.REQ)
-    sock_init.connect('tcp://' + init_host + ':7777')
+    sock_init.connect('tcp://' + options.init_host + ':7777')
     port = getport()
     sock_init.send(socket.gethostname() + 'parasol' + str(port))
     ret = sock_init.recv()
