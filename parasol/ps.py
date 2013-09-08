@@ -40,8 +40,10 @@ class parasrv(Exception):
 
 class paralg(parasrv):
      
-    def __init__(self, comm, srv_sz = 1):
-        parasrv.__init__(self, comm, srv_sz)
+    def __init__(self, comm, para_cfg_file):
+        self.para_cfg = json.loads(open(para_cfg_file).read())
+        self.srv_sz = self.para_cfg['nserver']
+        parasrv.__init__(self, comm, self.srv_sz)
         self.comm = comm
         self.ge_suffix()
         self.comm.barrier() 

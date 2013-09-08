@@ -1,6 +1,7 @@
 {
+"nserver" : 1,
+"nworker" : 8,
 "k" : 20,
-"n" : 32,
 "input" : "/home/xunzhang/xunzhang/Data/book_interest/testfile",
 "outputp" : "/home/xunzhang/xunzhang/tmp/resultp/",
 "outputq" : "/home/xunzhang/xunzhang/tmp/resultq/"

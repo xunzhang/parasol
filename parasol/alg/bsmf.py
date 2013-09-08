@@ -14,12 +14,10 @@ from parasol.ps import paralg
     
 class bsmf(paralg):
 
-    def __init__(self, comm, srv_sz, para_cfg_file):
-        paralg.__init__(self, comm, srv_sz)
+    def __init__(self, comm, para_cfg_file):
+        paralg.__init__(self, comm, para_cfg_file)
         self.rank = self.comm.Get_rank()
-        self.para_cfg = json.loads(open(para_cfg_file).read())
-        
-        self.a, self.b = npfact2D(self.para_cfg['n'])
+        self.a, self.b = npfact2D(self.para_cfg['nworker'])
         self.k = self.para_cfg['k']
         self.filename = self.para_cfg['input']
         self.outp = self.para_cfg['outputp']

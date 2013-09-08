@@ -6,11 +6,13 @@ if __name__ == '__main__':
     comm = MPI.COMM_WORLD
     
     path = '/home/xunzhang/xunzhang/Proj/parasol/config/'
-    srv_sz = 1
-    bsmf_solver = bsmf(comm, srv_sz, path + 'bsmf_cfg.json')
+    bsmf_solver = bsmf(comm, path + 'bsmf_cfg.json')
+
     bsmf_solver.solve()
+
     esum = bsmf_solver.calc_loss()
     if comm.Get_rank() == 0:
         print 'esum is', esum
+
     bsmf_solver.write_bsmf_result()
     
