@@ -13,7 +13,7 @@ if __name__ == '__main__':
     optpar.add_option('-e', '--entry', action = 'store', type = 'string', default = 'run_bsmf.py', dest = 'entry', help = 'entry of your alg entry')
     options, args = optpar.parse_args()
     
-    start_parasrv_cmd = 'mrun -n ' + str(options.parasrv_num) + ' -p 1 python ./parasol/server/start_srv.py -host ' + socket.gethostname()
+    start_parasrv_cmd = 'mrun -n ' + str(options.parasrv_num) + ' -p 1 python ./parasol/server/start_srv.py --hostname ' + socket.gethostname()
     subprocess.Popen(start_parasrv_cmd, shell = True)
     #subprocess.call(start_parasrv_cmd, shell = True)
     

@@ -11,23 +11,25 @@ from parasol.server.hash_ring import HashRing
 
 class parasrv(Exception):
 
-    def __init__(self, srv_sz = 1):
+    def __init__(self, comm, srv_sz = 1):
         self.srv_sz = srv_sz
-        context = zmq.Context()
-        sock = context.socket(zmq.REP)
-        sock.bind("tcp://*:7777")
         srv_lst = []
-        while i in xrange(self.srv_sz):
-            msg = sock.recv()
-            tmp = msg.split('parasol')
-            srv_lst.append((tmp[0], tmp[1]))
-            sock.send('done')
         self.dict_lst = []
-        for i in xrange(self.srv_sz):
-            tmp = {}
-            tmp["node"] = srv_lst[i][0]
-            tmp["port"] = srv_lst[i][1]
-            self.dict_lst.append(tmp)
+        if comm.Get_rank() == 0:
+            context = zmq.Context()
+            sock = context.socket(zmq.REP)
+            sock.bind("tcp://*:7777")
+            for i in xrange(self.srv_sz):
+                msg = sock.recv()
+                tmp = msg.split('parasol')
+                srv_lst.append((tmp[0], tmp[1]))
+                sock.send('done')
+            for i in xrange(self.srv_sz):
+                tmp = {}
+                tmp["node"] = srv_lst[i][0]
+                tmp["port"] = srv_lst[i][1]
+                self.dict_lst.append(tmp)
+        self.dict_lst = comm.bcast(self.dict_lst, root = 0)
         # generate kvm
         self.ge_kvm()
         self.servers = [i for i in xrange(self.srv_sz)]
@@ -36,11 +38,10 @@ class parasrv(Exception):
     def ge_kvm(self):
         self.kvm = [kv(srv['node'], srv['port']) for srv in self.dict_lst]
 
-
 class paralg(parasrv):
      
     def __init__(self, comm, srv_sz = 1):
-        parasrv.__init__(self, srv_sz)
+        parasrv.__init__(self, comm, srv_sz)
         self.comm = comm
         self.ge_suffix()
         self.comm.barrier() 

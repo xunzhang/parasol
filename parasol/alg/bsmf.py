@@ -10,7 +10,7 @@ from optparse import OptionParser
 from parasol.utils.parallel import npfact2D 
 from parasol.writer.writer import outputvec    
 from parasol.loader.crtblkmtx import ge_blkmtx
-from parasol.parasol import paralg
+from parasol.ps import paralg
     
 class bsmf(paralg):
 

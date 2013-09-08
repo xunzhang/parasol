@@ -18,27 +18,16 @@ def rselect(gset):
 if __name__ == '__main__':
     context = zmq.Context()
     sock = context.socket(zmq.REP)
-    #global_index = set(range(100))
-    #if socket.gethostname() == 'dwalin':
-    #  sock.bind("tcp://*:8907")
-    #  msg = sock.recv()
-    #  kvpoll_index = rselect(global_index)
-    #  sock.send(str(kvpoll_index))
-    #  global_index.remove(kvpoll_index)
-    # tell all srv global_index
     
-    # return hostnames to clients
-    #tmp = json.loads(open('../../config/parasol_cfg.json').read())
-    #init_host = tmp['localhostname']
-    #init_host = 'dwalin'
     optpar = OptionParser()
-    optpar.add_option('-h', '--host', action = 'store', type = 'string', default = 'dwalin', dest = 'init_host', help = 'local host for getting parasrv hostnames', metavar = 'dwalin')
+    optpar.add_option('--hostname', action = 'store', type = 'string', default = 'dwalin', dest = 'init_host', help = 'local host for getting parasrv hostnames', metavar = 'localhost')
     options, args = optpar.parse_args()
      
     context_init = zmq.Context()
     sock_init = context.socket(zmq.REQ)
     sock_init.connect('tcp://' + options.init_host + ':7777')
     port = getport()
+    #sock_init.send('localhost' + 'parasol' + str(port))
     sock_init.send(socket.gethostname() + 'parasol' + str(port))
     ret = sock_init.recv()
     if ret != 'done':
