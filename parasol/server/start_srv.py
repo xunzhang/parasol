@@ -40,7 +40,7 @@ if __name__ == '__main__':
         l = message.split('parasol')
         #oplst = [cPickle.loads(ii) for ii in l]
         oplst = [mp.unpackb(ii) for ii in l]
-        print oplst
+        #print oplst
         op = oplst[0]
         sp = sproxy(0)
         if op == 'push':
