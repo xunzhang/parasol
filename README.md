@@ -1,19 +1,21 @@
 parasol Overview
 ================
 
-Parameter Server is a central service for lots of Machine Learning algorithms(sgd, mf, svd, BFGS...) which not only offer a k-v store service but also some computational logic(asynchronization, cache...). You can get more details in Google's fresh paper "Large Scale Distributed Deep Networks".
+Parameter Server is a central service for many Machine Learning algorithms(sgd, mf, svd, BFGS...) which not only offer a k-v store service but also some computational logic. You can get more details in Google's fresh paper "Large Scale Distributed Deep Networks".
 
-Parasol is a simple Python version implementation of Parameter Server, parasol is not fault-tolerant(to be done) thus far.
+Parasol is a simple Python version implementation and it is not fault-tolerant(to be done) thus far.
 
-With parasol you can build your ML algorithm in yet another model: pull when using parameters, push when updating parameters. It is really simple model which helps you to distribute parameters into a distributed service. Since 'more data is usally helpful', you can take them and get a higher level in solving large scale parameters. Parasol makes scalability of learning algorithms following the pace of big data, for example a huge parameters space in deep learning. On the other hand, Parasol makes communication asynchronous which means workers can do much more calculation.
+With parasol you can build your ML algorithm in yet another model: 'pull when using parameters, push when updating parameters'. It is really simple model which helps you to distribute parameters into a distributed service. Since 'more data is usally helpful', you can take them and get a higher level in solving large scale parameters. Parasol makes scalability of learning algorithms following the pace of big data. Parasol also makes communication asynchronously which means workers can do much more calculation.
 
 Have Fun!
 
 Prerequisite
 ------------
 You must install ZemoMQ, mpi4py in advance.
-ZeroMQ is a high-performance asynchronous messaging library aimed at use in scalable distributed or concurrent applications.
-mpi4py is a Python package(@PyPI) for the Message Passing Interface (MPI) standard.
+
+[ZeroMQ]: http://zeromq.org is a high-performance asynchronous messaging library aimed at use in scalable distributed or concurrent applications.
+
+[mpi4py]: http://mpi4py.scipy.org is a Python package(at PyPI) for the Message Passing Interface (MPI) standard.
 
 Installation
 ------------
