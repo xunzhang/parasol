@@ -7,6 +7,7 @@ import json
 import socket
 import subprocess
 from optparse import OptionParser
+from parasol.utils.gethostnames import get_hostnames_st
 
 if __name__ == '__main__':
     optpar = OptionParser()
@@ -27,19 +28,22 @@ if __name__ == '__main__':
         if not nsrv:
              print 'config file must contain "nserver"'
              sys.exit(1)
-         nworker = tmp.get('nworker')
-         if not nworker:
+	nworker = tmp.get('nworker')
+	if not nworker:
              print 'config file must contain "nworker"'
              sys.exit(1)
  
     start_parasrv_cmd = 'mrun -n ' + str(nsrv) + ' python ./parasol/server/start_srv.py --hostname ' + socket.gethostname()
+    print start_parasrv_cmd
     #start_parasrv_cmd = 'mrun -n ' + str(nsrv) + ' -p 1 python ./parasol/server/start_srv.py --hostname ' + socket.gethostname()
     subprocess.Popen(start_parasrv_cmd, shell = True)
+
+    hosts_dict_st = get_hostnames_st(nsrv)
     
     entry_cmd = ''
     if args:
-        entry+cmd = ' '.join(args)
-    start_alg_cmd = 'mrun -n ' + str(nworker) + ' ' + entry_cmd
+        entry_cmd = ' '.join(args)
+    start_alg_cmd = 'mrun -n ' + str(nworker) + ' ' + entry_cmd + ' --hostsname ' + hosts_dict_st
     print start_alg_cmd
     subprocess.call(start_alg_cmd, shell = True)
 

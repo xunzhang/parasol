@@ -18,7 +18,6 @@ def rselect(gset):
 if __name__ == '__main__':
     context = zmq.Context()
     sock = context.socket(zmq.REP)
-    
     optpar = OptionParser()
     optpar.add_option('--hostname', action = 'store', type = 'string', default = 'dwalin', dest = 'init_host', help = 'local host for getting parasrv hostnames', metavar = 'localhost')
     options, args = optpar.parse_args()

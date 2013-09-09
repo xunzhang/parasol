@@ -11,39 +11,39 @@ from parasol.server.hash_ring import HashRing
 
 class parasrv(Exception):
 
-    def __init__(self, comm, srv_sz = 1):
-        self.srv_sz = srv_sz
-        srv_lst = []
-        self.dict_lst = []
-        if comm.Get_rank() == 0:
-            context = zmq.Context()
-            sock = context.socket(zmq.REP)
-            sock.bind("tcp://*:7777")
-            for i in xrange(self.srv_sz):
-                msg = sock.recv()
-                tmp = msg.split('parasol')
-                srv_lst.append((tmp[0], tmp[1]))
-                sock.send('done')
-            for i in xrange(self.srv_sz):
-                tmp = {}
-                tmp["node"] = srv_lst[i][0]
-                tmp["port"] = srv_lst[i][1]
-                self.dict_lst.append(tmp)
-        self.dict_lst = comm.bcast(self.dict_lst, root = 0)
+    def __init__(self, comm, hosts_dict_lst):
+        self.srv_sz = len(hosts_dict_lst)
+        #srv_lst = []
+        #self.dict_lst = []
+        #if comm.Get_rank() == 0:
+            #context = zmq.Context()
+            #sock = context.socket(zmq.REP)
+            #sock.bind("tcp://*:7777")
+            #for i in xrange(self.srv_sz):
+            #    msg = sock.recv()
+            #    tmp = msg.split('parasol')
+            #    srv_lst.append((tmp[0], tmp[1]))
+            #    sock.send('done')
+            #for i in xrange(self.srv_sz):
+            #    tmp = {}
+            #    tmp["node"] = srv_lst[i][0]
+            #    tmp["port"] = srv_lst[i][1]
+            #    self.dict_lst.append(tmp)
+        self.dict_lst = comm.bcast(hosts_dict_lst, root = 0)
         # generate kvm
-        self.ge_kvm()
+        self.ge_kvm(hosts_dict_lst)
         self.servers = [i for i in xrange(self.srv_sz)]
         self.ring = HashRing(self.servers)
         
-    def ge_kvm(self):
-        self.kvm = [kv(srv['node'], srv['port']) for srv in self.dict_lst]
+    def ge_kvm(self, dict_lst):
+        self.kvm = [kv(srv['node'], srv['port']) for srv in dict_lst]
 
 class paralg(parasrv):
      
-    def __init__(self, comm, para_cfg_file):
-        self.para_cfg = json.loads(open(para_cfg_file).read())
-        self.srv_sz = self.para_cfg['nserver']
-        parasrv.__init__(self, comm, self.srv_sz)
+    def __init__(self, comm, hosts_dict_lst):
+        parasrv.__init__(self, comm, hosts_dict_lst)
+        #self.para_cfg = json.loads(open(para_cfg_file).read())
+        #self.srv_sz = self.para_cfg['nserver']
         self.comm = comm
         self.ge_suffix()
         self.comm.barrier() 

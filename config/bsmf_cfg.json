@@ -1,8 +1,11 @@
 {
 "nserver" : 1,
-"nworker" : 8,
+"nworker" : 1,
 "k" : 20,
-"input" : "/home/xunzhang/xunzhang/Data/book_interest/testfile",
-"outputp" : "/home/xunzhang/xunzhang/tmp/resultp/",
-"outputq" : "/home/xunzhang/xunzhang/tmp/resultq/"
+"input" : "/mfs/user/wuhong/book_interest/testfile",
+"outputp" : "/mfs/user/wuhong/tmp/mondayp/",
+"outputq" : "/mfs/user/wuhong/tmp/mondayq/",
+"alpha" : 0.002,
+"beta" : 0.02,
+"rounds" : 3
 }

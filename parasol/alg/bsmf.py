@@ -14,29 +14,18 @@ from parasol.ps import paralg
     
 class bsmf(paralg):
 
-    def __init__(self, comm, para_cfg_file):
-        paralg.__init__(self, comm, para_cfg_file)
+    def __init__(self, comm, hosts_dict_lst, nworker, k, input_filename, outp, outq, alpha = 0.002, beta = 0.02, rounds = 3):
+        paralg.__init__(self, comm, hosts_dict_lst)
         self.rank = self.comm.Get_rank()
-        self.a, self.b = npfact2D(self.para_cfg['nworker'])
-        self.k = self.para_cfg['k']
-        self.filename = self.para_cfg['input']
-        self.outp = self.para_cfg['outputp']
-        self.outq = self.para_cfg['outputq']
+        self.a, self.b = npfact2D(nworker)
+        self.k = k
+        self.filename = input_filename
+        self.outp = outp
+        self.outq = outq
         
-        # set default parameter for learning
-        self.alpha = 0.0002
-        self.beta = 0.02
-        self.rounds = 3
-         
-        alpha = self.para_cfg.get('alpha')
-        if alpha:
-            self.alpha = alpha
-        beta = self.para_cfg.get('beta')
-        if beta:
-            self.beta = beta
-        rounds = self.para_cfg.get('rounds')
-        if rounds:
-            self.rounds = rounds
+        self.alpha = alpha
+        self.beta = beta
+        self.rounds = rounds
         
         # create folder
         paralg.crt_outfolder(self, self.outp)
