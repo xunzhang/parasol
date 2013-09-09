@@ -13,9 +13,9 @@ Prerequisite
 ------------
 You must install ZemoMQ, mpi4py in advance.
 
-[ZeroMQ]: http://zeromq.org is a high-performance asynchronous messaging library aimed at use in scalable distributed or concurrent applications.
+[ZeroMQ](http://zeromq.org) is a high-performance asynchronous messaging library aimed at use in scalable distributed or concurrent applications.
 
-[mpi4py]: http://mpi4py.scipy.org is a Python package(at PyPI) for the Message Passing Interface (MPI) standard.
+[mpi4py](http://mpi4py.scipy.org) is a Python package(at PyPI) for the Message Passing Interface (MPI) standard.
 
 Installation
 ------------
