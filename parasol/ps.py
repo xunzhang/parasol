@@ -116,7 +116,7 @@ class paralg(parasrv):
             server_index = self.ring.get_node(key)
             dict_dict[server_index][key] = valfunc(index)
         # real push
-        for i in xrange(self.src_sz):
+        for i in xrange(self.srv_sz):
             if dict_dict[i]:
                 self.kvm[i].push_multi(dict_dict[i])
      
@@ -142,18 +142,18 @@ class paralg(parasrv):
             self.kvm[server_index].update(key, delta_row)
     
     def paralg_batch_inc_nodelta(self, newvalfunc, keyfunc = (lambda prefix, suffix : lambda index_st : prefix + index_st + suffix)('', ''), sz = 2):
-        if newvalfunc(0) == np.ndarray:
+        if newvalfunc(0) != np.ndarray:
             for index in xrange(sz):
                 key = keyfunc(str(index))
                 server_index = self.ring.get_node(key)
                 delta_row = list(newvalfunc(index) - self.kvm[server_index].pull(key))
-                self.kvm[server].update(key, delta_row)
+                self.kvm[server_index].update(key, delta_row)
         else:        
             for index in xrange(sz):
                 key = keyfunc(str(index))
                 server_index = self.ring.get_node(key)
                 delta_row = newvalfunc(index) - self.kvm[server_index].pull(key)
-                self.kvm[server].update(key, delta_row)
+                self.kvm[server_index].update(key, delta_row)
     
     def solve(self):
         pass    
