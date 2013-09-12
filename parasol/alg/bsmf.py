@@ -128,7 +128,7 @@ class bsmf(paralg):
                 key = 'q[:,' + str(index) + ']_' + str(self.rank % self.b)
                 server = self.ring.get_node(key)
                 self.q[:, index] = self.kvm[server].pull(key)
-                        
+    
     def __group_op_2(self, sz1, sz2):
         for index in xrange(sz1):
             key = 'p[' + str(index) + ',:]_' + str(self.rank / self.b)
@@ -141,6 +141,24 @@ class bsmf(paralg):
             deltaq = list(self.q[:, index] - self.kvm[server].pull(key))
             self.kvm[server].update(key, deltaq)
     
+    def __new_group_op_1(self, sz1, sz2, ind):
+        if ind == 'push':
+            paralg.paralg_batch_write(self, valfunc = (lambda i : list(self.p[i, :])), keyfunc = (lambda index_st : 'p[' + index_st + ',:]_' + str(self.rank / self.b)), sz1, pack_flag = False)
+            paralg.paralg_batch_write(self, valfunc = (lambda j : list(self.q[:, j])), keyfunc = (lambda index_st : 'q[:,' + index_st + ']_' + str(self.rank % self.b)), sz2)
+        if ind == 'pull':
+            paralg.paralg_batch_read(self, valfunc = (lambda i, val : self.p[i, :] = val), keyfunc = (lambda index_st : 'p[' + index_st + ',:]_' + str(self.rank / self.b)), stripfunc = (lambda val : self.__stripoff(val, str(self.rank / self.b), 'p[', ',:]_')), sz1)
+            paralg.paralg_batch_read(self, valfunc = (lambda j, val : self.q[:, j] = val), keyfunc = (lambda index_st : 'q[:,' + index_st + ']_' + str(self.rank % self.b)), stripfunc = (lambda val : self.__stripiff(val, str(self.rank % self.b), 'q[:,', ']_')), sz2)
+            #for index in xrange(sz1):
+            #    key = 'p[' + str(index) + ',:]_' + str(self.rank / self.b)
+            #    self.p[index, :] = paralg.paralg_read(self, key)
+            #for index in xrange(sz2):
+            #    key = key = 'q[:,' + str(index) + ']_' + str(self.rank % self.b)
+            #    self.q[:, index] = paralg.paralg_read(self, key)
+            
+    def __new_group_op_2(self, sz1, sz2):
+        paralg.paralg_batch_inc_nodelta(self, newvalfunc = (lambda i : self.p[i, :]), keyfunc = (lambda index_st : 'p[' + index_st + ',:]_' + str(self.rank / self.b)), sz1)
+        paralg.paralg_batch_inc_nodelta(self, newvalfunc = (lambda j : self.q[:, j]), keyfunc = (lambda index_st : 'q[:,' + index_st + ']_' + str(self.rank % self.b)), sz2)
+        
     def __mf_kernel(self):#, alpha = 0.0002, beta = 0.02, rounds = 5):
         pl_sz = self.p.shape[0]
         ql_sz = self.q.shape[1]
@@ -150,7 +168,8 @@ class bsmf(paralg):
             print 'round', it
             if it != 0:
                 #self.__group_op_1(pl_sz, ql_sz, 'pull')
-                self.__pack_op_1(pl_sz, ql_sz, 'pull')
+                #self.__pack_op_1(pl_sz, ql_sz, 'pull')
+                self.__new_group_op_1(pl_sz, ql_sz, 'pull')
             print 'after round pull'
             
             start = clock()
@@ -166,7 +185,7 @@ class bsmf(paralg):
             start = clock()
             print 'local calc time is', start - end
             
-            self.__group_op_2(pl_sz, ql_sz)
+            self.__new_group_op_2(pl_sz, ql_sz)
             end = clock()
             print 'communication time is', end - start
     
@@ -174,7 +193,8 @@ class bsmf(paralg):
         self.comm.barrier()
         start = clock()
         #self.__group_op_1(pl_sz, ql_sz, 'pull')
-        self.__pack_op_1(pl_sz, ql_sz, 'pull')
+        #self.__pack_op_1(pl_sz, ql_sz, 'pull')
+        self.__new_group_op_1(pl_sz, ql_sz, 'pull')
         self.comm.barrier()
         end = clock()
         print 'last pull time is', end - start
@@ -189,7 +209,8 @@ class bsmf(paralg):
         print 'i is', i
         print 'before init push'
         #self.__group_op_1(u, i, 'push')
-        self.__pack_op_1(u, i, 'push')
+        #self.__pack_op_1(u, i, 'push')
+        self.__new_group_op_1(u, i, 'push')
         print 'finish init push'
         self.comm.barrier()
 
@@ -212,10 +233,11 @@ class bsmf(paralg):
         return esum
     
     def calc_loss(self):
-        esum = self.__calc_esum()
-        self.comm.barrier()
-        esum = self.comm.allreduce(esum, op = MPI.SUM)
-        return esum
+        return paralg.calc_loss(self, __calc_esum)
+        #esum = self.__calc_esum()
+        #self.comm.barrier()
+        #esum = self.comm.allreduce(esum, op = MPI.SUM)
+        #return esum
          
     def write_bsmf_result(self):
         if self.rank % self.b == 0:
