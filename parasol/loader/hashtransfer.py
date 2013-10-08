@@ -69,14 +69,14 @@ if __name__ == '__main__':
   print hashfoo(tpl[0], tpl[1], 3, 4)
 
   lines = ['2\t4\t3\n', '23\t6\t4\n', '31\t3\t4\n', '2\t5\t4\n', '14\t3\t4\n', '15\t3\t4\n', '61\t3\t4\n', '17\t3\t4\n', '81\t3\t4\n', '91\t3\t4\n']
-  print putlines(lines, 4, parser_a, 'fsmap')
+  print putlines(lines, 4, parser_a('\t'), 'fsmap')
 
   lines = ['a\tb\n', 'a\tc\n', 'a\td\n', 'b\ta\n', 'b\td\n', 'c\tb\n', 'c\td\n', 'd\tc\n']
-  print putlines(lines, 4, parser_b)
-  print putlines(lines, 4, parser_b, 'fsmap')
+  print putlines(lines, 4, parser_b('\t'))
+  print putlines(lines, 4, parser_b('\t'), 'fsmap')
   
   lines = ['a\tb\n', 'a\tc\td\n', 'b\ta\n', 'b\td\n', 'c\tb\td\n', 'd\tc\n']
-  print putlines(lines, 4, parser_b, 'fsmap', True)
+  print putlines(lines, 4, parser_b('\t'), 'fsmap', True)
 
   lines = ['a\tb\tc\td\n', 'b\ta\td\n', 'c\tb\td\n', 'd\tc\n']
-  print putlines(lines, 4, parser_b, 'fsmap', True)
+  print putlines(lines, 4, parser_b('\t'), 'fsmap', True)
