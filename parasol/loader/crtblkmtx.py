@@ -34,7 +34,7 @@ def ge_blkmtx(fl, comm, parser, pattern = 'linesplit', mix = False):
   >>>   print cmap
   >>>   print mtx
   '''
-  
+  import numpy as np 
   from parasol.utils.expand import expd_f_lst
   from load import fns_partition
   from np_scheduler import scheduler_load, exchange
@@ -57,6 +57,18 @@ def ge_blkmtx(fl, comm, parser, pattern = 'linesplit', mix = False):
   if pattern == 'linesplit':
     comm.barrier()
     return lines
+  elif pattern == 'fvec': # only support line decomposition
+    comm.barrier()
+    rmap = {}
+    mtx = []
+    cnt = 0
+    for line in lines:
+      stuff = parser(line)
+      rmap[cnt] = stuff[0]
+      mtx.append(stuff[1:])
+      cnt += 1
+    mtx = np.array(mtx)
+    return rmap, mtx
   else: 
     # hash lines into slotslt
     slotslst = putlines(lines, sz, parser, pattern, mix)
@@ -71,7 +83,7 @@ def ge_blkmtx(fl, comm, parser, pattern = 'linesplit', mix = False):
     # mapping inds to ids and get rmap, cmap, new slotslst((rid, cid, val)s)
     rmap, cmap, slotslst = ind_mapping(slotslst, comm, pattern)
     print 'finish ind_mapping'
-
+    
     # generate block matrix
     mtx = coo_matrix((np.array([i[2] for i in slotslst]), (np.array([i[0] for i in slotslst]), np.array([i[1] for i in slotslst]))))
   

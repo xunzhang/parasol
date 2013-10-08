@@ -23,6 +23,7 @@ def putlines(lines, np, parser = (lambda l : l), pattern = 'fmap', mix = False, 
   >>> lines = ['2\t4\t1\n', '4\t5\t2\n', '7\t6\t3\n', '9\t11\t4\n']
   >>> lst = putlines(lines, np)
   '''
+  import re
   from parasol.utils.parallel import npfactx, npfacty, npfact2D
 
   # default fmap pattern
@@ -33,29 +34,32 @@ def putlines(lines, np, parser = (lambda l : l), pattern = 'fmap', mix = False, 
     npx, npy = npfacty(np)
   
   lineslotslst = [[] for i in xrange(np)]
-
+  delimiter = re.compile('[:| ]*')
+  
   for line in lines:
-    stf = []
-    #if fmt == 'usr':
-    #  stf = [int(l) for l in line.strip('\n').split('\t')]
-    #if fmt == 'ussrt':
-    #  l = line.strip('\n').split('\t')
-    #  #for l in line.strip('\n').split('\t'):
-    #  if l[2] == 'P':
-    #    if l[3] == 'NULL' or l[3] == '':
-    #      # 3.7 is avg rating
-    #      stf = [int(l[0]), int(l[1]), 3.7]
-    #    else:
-    #      stf = [int(l[0]), int(l[1]), int(l[3])]
+    #stf = []
     stf = parser(line)
     if stf:
+      # bfs or part of fset case  
       if len(stf) == 2:
-        tpl = (stf[0], stf[1], 1)
-        lineslotslst[hashfunc(stf[0], stf[1], npx, npy)].append(tpl)
+        tmp = delimiter.split(stf[1])
+        if len(tmp) == 1:
+            tpl = (stf[0], stf[1], 1)
+            lineslotslst[hashfunc(stf[0], stf[1], npx, npy)].append(tpl)
+        else:
+            tpl = (stf[0], tmp[0], float(tmp[1]))
+            lineslotslst[hashfunc(stf[0], tmp[0], npx, npy)].append(tpl)
+      # fset case
       elif mix:
         for item in stf[1:]:
-          tpl = (stf[0], item, 1)
-	  lineslotslst[hashfunc(stf[0], item, npx, npy)].append(tpl)
+          tmp = delimiter.split(item)
+          if len(tmp) == 1:
+              tpl = (stf[0], item, 1)
+	      lineslotslst[hashfunc(stf[0], item, npx, npy)].append(tpl)
+          else:
+              tpl = (stf[0], tmp[0], float(tmp[1]))
+	      lineslotslst[hashfunc(stf[0], tmp[0], npx, npy)].append(tpl)
+      # fsv case
       else: 
         tpl = (stf[0], stf[1], stf[2])
         lineslotslst[hashfunc(stf[0], stf[1], npx, npy)].append(tpl)

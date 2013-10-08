@@ -2,7 +2,7 @@
 
 from mpi4py import MPI
 from parasol.loader.crtblkmtx import ge_blkmtx
-from parasol.utils.lineparser import parser_a, parser_b, parser_ussrt
+from parasol.utils.lineparser import parser_a, parser_b, parser_c, parser_d, parser_e, parser_ussrt
 
 if __name__ == '__main__':
     comm = MPI.COMM_WORLD
@@ -14,20 +14,52 @@ if __name__ == '__main__':
     if rank == 1:
         print rm, cm
         print mtx
-    print '-------------------------a.txt---------------------------------'
+    	print '-------------------------a.txt---------------------------------'
     rm, cm, mtx = ge_blkmtx('b.txt', comm, parser_b('\t'), 'fmap') # expect mtx
-    print rm, cm
-    print mtx
-    print '--------------------------b.txt--------------------------------'
+    if rank == 1:
+        print rm, cm
+        print mtx
+    	print '--------------------------b.txt--------------------------------'
     rm, cm, mtx = ge_blkmtx('c.txt', comm, parser_b('\t'), 'fmap', True) # expect mtx
-    print rm, cm
-    print mtx
-    print '---------------------------c.txt-------------------------------'
-    rm, cm, mtx = ge_blkmtx('d.txt', comm, parser_ussrt, 'fsmap') # expect mtx
-    print rm, cm
-    print mtx
-    print '----------------------------d.txt------------------------------'
-    lines = ge_blkmtx('e.txt', comm, parser_b('\t')) # expect lines 
-    if rank == 0:
-        print lines
-    print '----------------------------e.txt------------------------------'
+    if rank == 1:
+        print rm, cm
+        print mtx
+    	print '---------------------------c.txt-------------------------------'
+    #rm, cm, mtx = ge_blkmtx('d.txt', comm, parser_ussrt, 'fsmap') # expect mtx
+    #print rm, cm
+    #print mtx
+    #print '----------------------------d.txt------------------------------'
+    rm, cm, mtx = ge_blkmtx('a2.txt', comm, parser_c('\t', '|'), 'fmap', True)
+    if rank == 1:
+        print rm, cm
+        print mtx
+    	print '----------------------------a2.txt------------------------------'
+    rm, cm, mtx = ge_blkmtx('f.txt', comm, parser_c('\t', '|'), 'fmap', True)
+    if rank == 1:
+        print rm, cm
+        print mtx
+    	print '----------------------------f.txt------------------------------'
+    rm, cm, mtx = ge_blkmtx('h.txt', comm, parser_b('\t'), 'fmap', True)
+    if rank == 1:
+        print rm, cm
+    	print mtx
+    	print '----------------------------h.txt------------------------------'
+    rm, cm, mtx = ge_blkmtx('d2.txt', comm, parser_b('\t'), 'fsmap')
+    if rank == 1:
+    	print rm, cm
+    	print mtx
+    	print '----------------------------d2.txt------------------------------'
+    rm, mtx = ge_blkmtx('g.txt', comm, parser_e(' ', '|'), 'fvec')
+    if rank == 1:
+    	print rm 
+    	print mtx
+    	print '----------------------------g.txt------------------------------'
+    rm, mtx = ge_blkmtx('g2.txt', comm, parser_e(' ', '|'), 'fvec')
+    if rank == 1:
+    	print rm
+    	print mtx
+    	print '----------------------------g2.txt------------------------------'
+    #rm, mtx = ge_blkmtx('e.txt', comm, parser_d('\t'), 'fvec') 
+    #print rm
+    #print mtx
+    #print '----------------------------e.txt------------------------------'
