@@ -5,7 +5,7 @@
 
 from mpi4py import MPI
 
-def ind_mapping(slotslst, comm):
+def ind_mapping(slotslst, comm, pattern = 'fmap'):
   '''
   mapping inds to ids and return the mapping from ids to inds
   
@@ -39,11 +39,16 @@ def ind_mapping(slotslst, comm):
   >>>   print cm
   >>>   print slotslst
   '''
-  from parasol.utils.parallel import npfact2D
+  from parasol.utils.parallel import npfactx, npfacty, npfact2D
   np = comm.Get_size()
   rank = comm.Get_rank()
 
-  npx, npy = npfact2D(np)
+  npx, npy = npfactx(np)
+  if pattern == 'fsmap':
+    npx, npy = npfact2D(np)
+  if pattern == 'smap':
+    npx, npy = npfacty(np)
+  
   rowcolor = rank / npy
   colcolor = rank % npy
   row_comm = comm.Split(colcolor, rank)
@@ -70,4 +75,36 @@ def ind_mapping(slotslst, comm):
     slotslst[k] = (rowrevmap[slotslst[k][0]], colrevmap[slotslst[k][1]], slotslst[k][2])
   
   return rowmap, colmap, slotslst
-  
+ 
+if __name__ == '__main__': 
+  comm = MPI.COMM_WORLD
+  rank = comm.Get_rank()
+  slotslst = []
+  if rank == 0:
+    slotslst = [(64, 6, 3), (64, 42, 4)]
+  if rank == 1:
+    slotslst = [(64, 21, 1)]
+  if rank == 2:
+    slotslst = [(27, 28, 1), (27, 42, 2), (37, 42, 3), (29, 28, 1), (29, 6, 3)]
+  if rank == 3:
+    slotslst = [(37, 21, 5)]
+  rm, cm, slotslst = ind_mapping(slotslst, comm)
+  if rank == 2:
+    print rm
+    print cm
+    print slotslst
+
+  slotslst2 = []
+  if rank == 0:
+    slotslst2 = [('a', 'b', 1), ('a', 'c', 1), ('a', 'd', 1)]
+  if rank == 1:
+    slotslst2 = [('d', 'c', 1)]
+  if rank == 2:
+    slotslst2 = [('c', 'b', 1), ('c', 'd', 1)]
+  if rank == 3:
+    slotslst2 = [('b', 'd', 1), ('b', 'a', 1)]
+  rm2, cm2, slotslst2 = ind_mapping(slotslst2, comm)
+  if rank == 2:
+    print rm2
+    print cm2
+    print slotslst2

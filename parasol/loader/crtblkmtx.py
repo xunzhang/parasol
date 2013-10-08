@@ -6,7 +6,7 @@
 import numpy as np
 from scipy.sparse import coo_matrix
 
-def ge_blkmtx(fl, comm, fmt = 'ussrt'):
+def ge_blkmtx(fl, comm, parser, pattern = 'linesplit', mix = False):
   '''
   Parallel loading lines from fl and generate block matrix
 
@@ -53,24 +53,26 @@ def ge_blkmtx(fl, comm, fmt = 'ussrt'):
   # parallel loading lines
   lines = scheduler_load(comm, loads)
   print 'rank %d lines got' % rank
-
-  # hash lines into slotslt
-  slotslst = putlines(lines, sz, fmt)
-  print 'rank %d slotslst generated' % rank
-
-  comm.barrier()
-
-  # alltoall exchange, get desirable lines
-  slotslst = exchange(slotslst, comm)
-  print 'rank %d get desirable lines' % rank
-
-  comm.barrier()
-
-  # mapping inds to ids and get rmap, cmap, new slotslst((rid, cid, val)s)
-  rmap, cmap, slotslst = ind_mapping(slotslst, comm)
-  print 'finish ind_mapping'
-
-  # generate block matrix
-  mtx = coo_matrix((np.array([i[2] for i in slotslst]), (np.array([i[0] for i in slotslst]), np.array([i[1] for i in slotslst]))))
   
-  return rmap, cmap, mtx
+  if pattern == 'linesplit':
+    comm.barrier()
+    return lines
+  else: 
+    # hash lines into slotslt
+    slotslst = putlines(lines, sz, parser, pattern, mix)
+    print 'rank %d slotslst generated' % rank
+    comm.barrier()
+
+    # alltoall exchange, get desirable lines
+    slotslst = exchange(slotslst, comm)
+    print 'rank %d get desirable lines' % rank
+    comm.barrier()
+
+    # mapping inds to ids and get rmap, cmap, new slotslst((rid, cid, val)s)
+    rmap, cmap, slotslst = ind_mapping(slotslst, comm, pattern)
+    print 'finish ind_mapping'
+
+    # generate block matrix
+    mtx = coo_matrix((np.array([i[2] for i in slotslst]), (np.array([i[0] for i in slotslst]), np.array([i[1] for i in slotslst]))))
+  
+    return rmap, cmap, mtx

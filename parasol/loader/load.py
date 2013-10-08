@@ -3,6 +3,8 @@
 # load file(s) line by line
 #
 
+from np_scheduler import BLK_SZ
+
 def f_ld_lines(fn, st, en):
   '''
   Load lines of file fn between st and en(offset)
@@ -150,7 +152,7 @@ def fs_ld_lines(fns, displs, st, en):
         if not l: break
         yield l 
   
-def fns_partition(fns, np):
+def fns_partition(fns, np, blk_sz = BLK_SZ):
   '''
   Patition files in np blocks/chunks
 
@@ -181,9 +183,9 @@ def fns_partition(fns, np):
   >>>   print '----'
   '''
   # default nbk = np * BLK_SZ = np * 8
-  from np_scheduler import BLK_SZ
-  np = np * BLK_SZ
-  
+  #np = np * BLK_SZ
+  np = np * blk_sz 
+ 
   func_loaders = []
   displs = [0] * (len(fns) + 1)
   import os

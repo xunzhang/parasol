@@ -49,6 +49,13 @@ class paralg(parasrv):
         self.comm = comm
         self.ge_suffix()
         self.comm.barrier() 
+    
+    def loadinput(self, filename, parser = (lambda l : l), pattern = 'linesplit', mix = False):
+        from parasol.loader.crtblkmtx import ge_blkmtx
+    	if pattern == 'linesplit':
+	    self.linelst = ge_blkmtx(filename, self.comm, parser, pattern, mix)
+        else
+	    self.rmap, self.cmap, self.mtx = ge_blkmtx(filename, self.comm, parser, pattern, mix)
      
     def __start_srvs(self):
         pass
@@ -169,3 +176,9 @@ class paralg(parasrv):
     
     def packops(self):
         pass
+
+    def create_row_kv(self, coo_mtx):
+       self.paralg()
+    
+    def create_col_kv(self, coo_mtx):
+    	pass 

@@ -224,7 +224,9 @@ class bsmf(paralg):
         self.__mf_kernel()
 
     def solve(self):
-        self.rmap, self.cmap, self.mtx = ge_blkmtx(self.filename, self.comm)
+        from parasol.utils.lineparser import parser_ussrt
+        #self.rmap, self.cmap, self.mtx = ge_blkmtx(self.filename, self.comm)
+	paralg.loadinput(self, self.filename, parser_ussrt, 'fsmap')
         self.comm.barrier()
         self.__matrix_factorization()
         self.comm.barrier()
