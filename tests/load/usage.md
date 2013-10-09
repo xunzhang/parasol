@@ -9,8 +9,6 @@ patterns and be coincide, simply used for general usage.
 
 Usage
 -----
-
------------------------------------------------------------------------------
 <table border="1">
     <tr>
         <th>textfile</th>
@@ -97,8 +95,6 @@ Usage
         <td>parser_b('\t')</td>
     </tr>
 </table>
-
---------------------------------------------------------------------------------
 
 Note
 ----

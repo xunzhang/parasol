@@ -54,7 +54,7 @@ class paralg(parasrv):
         from parasol.loader.crtblkmtx import ge_blkmtx
     	if pattern == 'linesplit':
 	    self.linelst = ge_blkmtx(filename, self.comm, parser, pattern, mix)
-        else
+        else:
 	    self.rmap, self.cmap, self.mtx = ge_blkmtx(filename, self.comm, parser, pattern, mix)
      
     def __start_srvs(self):
