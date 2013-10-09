@@ -10,17 +10,17 @@ if __name__ == '__main__':
     lines = ge_blkmtx('a.txt', comm, parser_b('\t')) # expect lines
     print lines
     print '------------------------a.txt----------------------------------'
-    rm, cm, mtx = ge_blkmtx('a.txt', comm, parser_b('\t'), 'fmap', True) # expect mtx
+    rm, cm, dm, mtx = ge_blkmtx('a.txt', comm, parser_b('\t'), 'fmap', True) # expect mtx
     if rank == 1:
         print rm, cm
         print mtx
     	print '-------------------------a.txt---------------------------------'
-    rm, cm, mtx = ge_blkmtx('b.txt', comm, parser_b('\t'), 'fmap') # expect mtx
+    rm, cm, dm, mtx = ge_blkmtx('b.txt', comm, parser_b('\t'), 'fmap') # expect mtx
     if rank == 1:
         print rm, cm
         print mtx
     	print '--------------------------b.txt--------------------------------'
-    rm, cm, mtx = ge_blkmtx('c.txt', comm, parser_b('\t'), 'fmap', True) # expect mtx
+    rm, cm, dm, mtx = ge_blkmtx('c.txt', comm, parser_b('\t'), 'fmap', True) # expect mtx
     if rank == 1:
         print rm, cm
         print mtx
@@ -29,22 +29,22 @@ if __name__ == '__main__':
     #print rm, cm
     #print mtx
     #print '----------------------------d.txt------------------------------'
-    rm, cm, mtx = ge_blkmtx('a2.txt', comm, parser_c('\t', '|'), 'fmap', True)
+    rm, cm, dm, mtx = ge_blkmtx('a2.txt', comm, parser_c('\t', '|'), 'fmap', True)
     if rank == 1:
         print rm, cm
         print mtx
     	print '----------------------------a2.txt------------------------------'
-    rm, cm, mtx = ge_blkmtx('f.txt', comm, parser_c('\t', '|'), 'fmap', True)
+    rm, cm, dm, mtx = ge_blkmtx('f.txt', comm, parser_c('\t', '|'), 'fmap', True)
     if rank == 1:
         print rm, cm
         print mtx
     	print '----------------------------f.txt------------------------------'
-    rm, cm, mtx = ge_blkmtx('h.txt', comm, parser_b('\t'), 'fmap', True)
+    rm, cm, dm, mtx = ge_blkmtx('h.txt', comm, parser_b('\t'), 'fmap', True)
     if rank == 1:
         print rm, cm
     	print mtx
     	print '----------------------------h.txt------------------------------'
-    rm, cm, mtx = ge_blkmtx('d2.txt', comm, parser_b('\t'), 'fsmap')
+    rm, cm, dm, mtx = ge_blkmtx('d2.txt', comm, parser_b('\t'), 'fsmap')
     if rank == 1:
     	print rm, cm
     	print mtx

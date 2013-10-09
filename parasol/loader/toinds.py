@@ -39,6 +39,7 @@ def ind_mapping(slotslst, comm, pattern = 'fmap'):
   >>>   print cm
   >>>   print slotslst
   '''
+  import itertools
   from parasol.utils.parallel import npfactx, npfacty, npfact2D
   np = comm.Get_size()
   rank = comm.Get_rank()
@@ -57,6 +58,12 @@ def ind_mapping(slotslst, comm, pattern = 'fmap'):
   rows = [stf[0] for stf in slotslst] 
   cols = [stf[1] for stf in slotslst] 
   
+  # ['a', 'a', 'a', 'b', 'b', 'c'] -> [3, 2, 1]
+  degree = [len(list(grp)) for key, grp in itertools.groupby(rows)]  
+  degreemap = {}
+  for item in degree:
+    degreemap[degree.index(item)] = item
+  
   cols = list(set(row_comm.allreduce(cols, op = MPI.SUM)))
   rows = list(set(col_comm.allreduce(rows, op = MPI.SUM)))
   rows.sort()
@@ -74,7 +81,7 @@ def ind_mapping(slotslst, comm, pattern = 'fmap'):
   for k in xrange(len(slotslst)):
     slotslst[k] = (rowrevmap[slotslst[k][0]], colrevmap[slotslst[k][1]], slotslst[k][2])
   
-  return rowmap, colmap, slotslst
+  return rowmap, colmap, slotslst, degreemap
  
 if __name__ == '__main__': 
   comm = MPI.COMM_WORLD
@@ -88,23 +95,21 @@ if __name__ == '__main__':
     slotslst = [(27, 28, 1), (27, 42, 2), (37, 42, 3), (29, 28, 1), (29, 6, 3)]
   if rank == 3:
     slotslst = [(37, 21, 5)]
-  rm, cm, slotslst = ind_mapping(slotslst, comm)
+  rm, cm, slotslst, dm = ind_mapping(slotslst, comm)
   if rank == 2:
     print rm
     print cm
+    print dm
     print slotslst
 
   slotslst2 = []
   if rank == 0:
-    slotslst2 = [('a', 'b', 1), ('a', 'c', 1), ('a', 'd', 1)]
+    slotslst2 = [('a', 'b', 1), ('a', 'c', 1), ('a', 'd', 1), ('b', 'd', 1), ('b', 'a', 1)]
   if rank == 1:
-    slotslst2 = [('d', 'c', 1)]
-  if rank == 2:
-    slotslst2 = [('c', 'b', 1), ('c', 'd', 1)]
-  if rank == 3:
-    slotslst2 = [('b', 'd', 1), ('b', 'a', 1)]
-  rm2, cm2, slotslst2 = ind_mapping(slotslst2, comm)
-  if rank == 2:
+    slotslst2 = [('d', 'c', 1), ('c', 'b', 1), ('c', 'd', 1)]
+  rm2, cm2, slotslst2, dm2 = ind_mapping(slotslst2, comm)
+  if rank == 0:
     print rm2
     print cm2
+    print dm2
     print slotslst2

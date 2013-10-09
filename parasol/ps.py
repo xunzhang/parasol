@@ -55,7 +55,7 @@ class paralg(parasrv):
     	if pattern == 'linesplit':
 	    self.linelst = ge_blkmtx(filename, self.comm, parser, pattern, mix)
         else:
-	    self.rmap, self.cmap, self.mtx = ge_blkmtx(filename, self.comm, parser, pattern, mix)
+	    self.rmap, self.cmap, self.dmap, self.mtx = ge_blkmtx(filename, self.comm, parser, pattern, mix)
      
     def __start_srvs(self):
         pass
