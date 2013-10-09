@@ -57,19 +57,12 @@ class paralg(parasrv):
         else:
 	    self.rmap, self.cmap, self.dmap, self.mtx = ge_blkmtx(filename, self.comm, parser, pattern, mix)
      
-    def __start_srvs(self):
-        pass
- 
     def ge_suffix(self):
         suffix = ''
         if self.comm.Get_rank() == 0:
             suffix = '_' + str(random.randint(0, 100000))
         self.suffix = self.comm.bcast(suffix, root = 0)
    
-    #def ge_kvm(self):
-    #    self.kvm = [kv(srv['node'], srv['port']) for srv in json.loads(open(self.srv_cfg_file).read())]
-        #self.__start_srvs()
-        
     def crt_outfolder(self, folder): 
         if self.comm.Get_rank() == 0:
             if not os.path.exists(folder):

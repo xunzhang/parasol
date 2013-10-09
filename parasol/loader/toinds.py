@@ -57,9 +57,10 @@ def ind_mapping(slotslst, comm, pattern = 'fmap'):
   
   rows = [stf[0] for stf in slotslst] 
   cols = [stf[1] for stf in slotslst] 
-  
-  # ['a', 'a', 'a', 'b', 'b', 'c'] -> [3, 2, 1]
+ 
+  # ['a', 'b', 'a', 'a', 'c', 'b'] -> ['a', 'a', 'a', 'b', 'b', 'c'] -> [3, 2, 1]
   degree = [len(list(grp)) for key, grp in itertools.groupby(rows)]  
+  degree.sort()
   degreemap = {}
   for item in degree:
     degreemap[degree.index(item)] = item
