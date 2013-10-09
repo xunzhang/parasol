@@ -9,18 +9,96 @@ patterns and be coincide, simply used for general usage.
 
 Usage
 -----
-textfile	fmt	pattern	mix_flag	parsername
-a.txt	fset	linesplit/fmap	no/mix	parser_b('\t')
-a2.txt	fset	fmap	mix	parser_c('\t', '|')
-b.txt	bfs	fmap	n	parser_b('\t')
-c.txt	null	fmap	y	parser_b('\t')	
-d.txt	fsv	fsmap	n	parser_ussrt
-d2.txt	fsv	fsmap	n	parser_b('\t')
-e.txt	fvec	fvec	y	parser_d('\t')
-f.txt	fs	fmap	n	parser_c('\t', '|')
-g.txt	fvec	fvec	n	parser_e(' ', '|')
-g2.txt	fvec	fvec	n	parser_e(' ', '|')
-h.txt	null	fmap	y	parser_b('\t')
+
+-----------------------------------------------------------------------------
+<table border="1">
+    <tr>
+        <th>textfile</th>
+        <th>fmt</th>
+        <th>pattern</th>
+        <th>mix_flag</th>
+        <th>parsername</th>
+    </tr>
+    <tr>
+        <td>a.txt</td>
+        <td>fset</td>
+        <td>linesplit/fmap</td>
+        <td>n/y</td>
+        <td>parser_b('\t')</td>
+    </tr>
+    <tr>
+        <td>a2.txt</td>
+        <td>fset</td>
+        <td>fmap</td>
+        <td>y</td>
+        <td>parser_c('\t', '|')</td>
+    </tr>
+    <tr>
+        <td>b.txt</td>
+        <td>bfs</td>
+        <td>fmap</td>
+        <td>n</td>
+        <td>parser_b('\t')</td>
+    </tr>
+    <tr>
+        <td>c.txt</td>
+        <td>null</td>
+        <td>fmap</td>
+        <td>y</td>
+        <td>parser_b('\t')</td>
+    </tr>
+    <tr>
+        <td>d.txt</td>
+        <td>fsv</td>
+        <td>fsmap</td>
+        <td>n</td>
+        <td>parser_ussrt</td>
+    </tr>
+    <tr>
+        <td>d2.txt</td>
+        <td>fsv</td>
+        <td>fsmap</td>
+        <td>n</td>
+        <td>parser_b('\t')</td>
+    </tr>
+    <tr>
+        <td>e.txt</td>
+        <td>fvec</td>
+        <td>fvec</td>
+        <td>y</td>
+        <td>parser_d('\t')</td>
+    </tr>
+    <tr>
+        <td>f.txt</td>
+        <td>fs</td>
+        <td>fmap</td>
+        <td>n</td>
+        <td>parser_c('\t', '|')</td>
+    </tr>
+    <tr>
+        <td>g.txt</td>
+        <td>fvec</td>
+        <td>fvec</td>
+        <td>n</td>
+        <td>parser_e(' ', '|')</td>
+    </tr>
+    <tr>
+        <td>g2.txt</td>
+        <td>fvec</td>
+        <td>fvec</td>
+        <td>n</td>
+        <td>parser_e(' ', '|')</td>
+    </tr>
+    <tr>
+        <td>h.txt</td>
+        <td>null</td>
+        <td>fmap</td>
+        <td>y</td>
+        <td>parser_b('\t')</td>
+    </tr>
+</table>
+
+--------------------------------------------------------------------------------
 
 Note
 ----
