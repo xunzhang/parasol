@@ -33,9 +33,8 @@ if __name__ == '__main__':
              print 'config file must contain "nworker"'
              sys.exit(1)
  
-    start_parasrv_cmd = 'mrun -n ' + str(nsrv) + ' python ./parasol/server/start_srv.py --hostname ' + socket.gethostname()
+    start_parasrv_cmd = 'mpirun --hostfile ~/.mpi/parasolsrv.1 -n ' + str(nsrv) + ' python ./parasol/server/start_srv.py --hostname ' + socket.gethostname()
     print start_parasrv_cmd
-    #start_parasrv_cmd = 'mrun -n ' + str(nsrv) + ' -p 1 python ./parasol/server/start_srv.py --hostname ' + socket.gethostname()
     subprocess.Popen(start_parasrv_cmd, shell = True)
 
     hosts_dict_st = get_hostnames_st(nsrv)
@@ -43,7 +42,7 @@ if __name__ == '__main__':
     entry_cmd = ''
     if args:
         entry_cmd = ' '.join(args)
-    start_alg_cmd = 'mrun -n ' + str(nworker) + ' ' + entry_cmd + ' --hostsname ' + hosts_dict_st
+    start_alg_cmd = 'mpirun --hostfile ~/.mpi/parasolworker.1 -n ' + str(nworker) + ' ' + entry_cmd + ' --hostsname ' + hosts_dict_st
     print start_alg_cmd
     subprocess.call(start_alg_cmd, shell = True)
 

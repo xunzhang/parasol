@@ -34,6 +34,7 @@ if __name__ == '__main__':
             sys.exit(1)
 
     start_parasrv_cmd = 'python ./parasol/server/start_srv.py --hostname ' + socket.gethostname() 
+    print start_parasrv_cmd
     subprocess.Popen(start_parasrv_cmd, shell = True)
 
     hosts_dict_st = get_hostnames_st(nsrv)
