@@ -132,7 +132,7 @@ class paralg(parasrv):
                 self.kvm[server_index].push(key, valfunc(index))
          
     def paralg_inc(self, key, delta):
-	if isinstance(delta, np.ndarry):
+	if isinstance(delta, np.ndarray):
 	    delta = list(delta)
         self.kvm[self.ring.get_node(key)].update(key, delta)
 
