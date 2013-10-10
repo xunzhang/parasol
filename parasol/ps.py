@@ -104,7 +104,7 @@ class paralg(parasrv):
                 #valfunc(index) = self.kvm[server_index].pull(key)
             
     def paralg_write(self, key, val):
-	if isinstance(val, np.ndarry):
+	if isinstance(val, np.ndarray):
 	    val = list(val)
         self.kvm[self.ring.get_node(key)].push(key, val)
 
