@@ -143,7 +143,7 @@ class paralg(parasrv):
     
     def paralg_batch_inc_nodelta(self, newvalfunc, keyfunc = (lambda prefix, suffix : lambda index_st : prefix + index_st + suffix)('', ''), sz = 2):
         #if newvalfunc(0) != np.ndarray:
-	if !isinstance(newvalfunc, np.ndarray):
+	if not isinstance(newvalfunc, np.ndarray):
             for index in xrange(sz):
                 key = keyfunc(str(index))
                 server_index = self.ring.get_node(key)
