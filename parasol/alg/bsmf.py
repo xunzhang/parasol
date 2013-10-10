@@ -191,8 +191,8 @@ class bsmf(paralg):
         start = clock()
         #self.__group_op_1(pl_sz, ql_sz, 'pull')
         #self.__pack_op_1(pl_sz, ql_sz, 'pull')
-	if self.rank == 0:
-            self.__new_group_op_1(pl_sz, ql_sz, 'pull')
+	#if self.rank == 0:
+        self.__new_group_op_1(pl_sz, ql_sz, 'pull')
         self.comm.barrier()
         end = clock()
         print 'last pull time is', end - start
