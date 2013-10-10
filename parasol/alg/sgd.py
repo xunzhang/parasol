@@ -30,7 +30,7 @@ class sgd(paralg):
 	m, n = self.sample.shape
 	if self.rank == 0:
 	    self.theta = np.random.rand(n)
-	    paralg.paralg_write(self, 'theta', list(self.theta))
+	    paralg.paralg_write(self, 'theta', self.theta)
 	z = np.arange(m)
 	for it in xrange(self.rounds):
 	    # shuffle indics
@@ -42,7 +42,7 @@ class sgd(paralg):
 		# update weights
 		delta = self.alpha * (self.label[i] - self.loss_func_gra(self.sample[i], self.theta)) * self.sample[i] + 2. * self.beta * self.alpha * self.theta
 	        # push delta
-		paralg.paralg_inc(self, 'theta', list(delta))
+		paralg.paralg_inc(self, 'theta', delta)
 		self.theta = self.theta + delta
 	self.comm.barrier()
 	self.theta = np.array(paralg.paralg_read(self, 'theta'))

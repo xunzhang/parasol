@@ -104,6 +104,8 @@ class paralg(parasrv):
                 #valfunc(index) = self.kvm[server_index].pull(key)
             
     def paralg_write(self, key, val):
+	if isinstance(val, np.ndarry):
+	    val = list(val)
         self.kvm[self.ring.get_node(key)].push(key, val)
 
     def __paralg_pack_batch_write(self, valfunc, keyfunc = (lambda prefix, suffix : lambda index_st : prefix + index_st + suffix)('', ''), sz = 2):
@@ -130,6 +132,8 @@ class paralg(parasrv):
                 self.kvm[server_index].push(key, valfunc(index))
          
     def paralg_inc(self, key, delta):
+	if isinstance(delta, np.ndarry):
+	    delta = list(delta)
         self.kvm[self.ring.get_node(key)].update(key, delta)
 
     # p = np.random.rand(5, 2)
