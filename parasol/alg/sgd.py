@@ -29,7 +29,7 @@ class sgd(paralg):
 	import random
 	m, n = self.sample.shape
 	self.theta = np.random.rand(n)
-	paralg.paralg_write('theta', list(self.theta))
+	paralg.paralg_write(self, 'theta', list(self.theta))
 	z = np.arange(m)
 	for it in xrange(self.rounds):
 	    # shuffle indics
