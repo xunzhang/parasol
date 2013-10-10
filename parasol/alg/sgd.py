@@ -55,12 +55,23 @@ class sgd(paralg):
 	if debug:
 	    return err
 
+    def parser_local(self, linelst):
+       import numpy as np
+       a = []
+       b = []
+       for line in linelst: 
+           tmp = [float(item) for item in line.strip('\n').split(',')]
+           a.append(tmp[:-1])
+           b.append(tmp[-1])
+       return np.array(a), np.array(b)
+
     def solve(self):
 	from sklearn import datasets
 	import matplotlib.pyplot as plt
-    	#from parasol.utils.lineparser import parser_b
-	#paralg.loadinput(self, self.filename, parser_b('\t'))
-	self.sample, self.label = datasets.make_classification(250, self.k)
+    	from parasol.utils.lineparser import parser_b
+	paralg.loadinput(self, self.filename)
+        self.sample, self.label = self.parser_local(self.linelst)
+        #self.sample, self.label = datasets.make_classification(250, self.k)
 	self.sample = np.hstack((np.ones((self.sample.shape[0], 1)), self.sample))	
 	self.comm.barrier()
 	debug_flag = False
