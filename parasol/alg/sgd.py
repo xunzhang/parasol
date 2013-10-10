@@ -21,6 +21,7 @@ class sgd(paralg):
 	paralg.crt_outfolder(self, self.output)
 
     def loss_func_gra(self, x, theta):
+        from math import e
 	term = e ** (np.dot(x, theta))
 	return term / (1. + term)
  
