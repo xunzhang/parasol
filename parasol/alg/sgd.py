@@ -6,7 +6,7 @@ from parasol.ps import paralg
 
 class sgd(paralg):
   
-    def __init__(self, comm, host_dict_lst, nworker, k, input_filename, output, alpha = 0.002, beta = 0.1, rounds = 3):
+    def __init__(self, comm, hosts_dict_lst, nworker, k, input_filename, output, alpha = 0.002, beta = 0.1, rounds = 3):
     	paralg.__init__(self, comm, hosts_dict_lst)
 	self.rank = self.comm.Get_rank()
 	#self.a, self.b = npfactx(nworker)
@@ -24,12 +24,12 @@ class sgd(paralg):
 	term = e ** (np.dot(x, theta))
 	return term / (1. + term)
  
-    def __sgd_kernel(self): #sample, label, max_iter = 20):
+    def __sgd_kernel(self): #sample, label, rounds = 20):
 	import random
 	m, n = self.sample.shape
 	self.theta = np.random.rand(n)
 	z = np.arange(m)
-	for it in xrange(self.max_iter):
+	for it in xrange(self.rounds):
 	    # shuffle indics
 	    random.shuffle(z)
 	    # traverse samples
