@@ -29,6 +29,7 @@ class sgd(paralg):
 	import random
 	m, n = self.sample.shape
 	self.theta = np.random.rand(n)
+	paralg.paralg_write('theta', list(self.theta))
 	z = np.arange(m)
 	for it in xrange(self.rounds):
 	    # shuffle indics
@@ -36,10 +37,13 @@ class sgd(paralg):
 	    # traverse samples
 	    for i in z:
 		# before calc, pull theta first
+		self.theta = np.array(paralg.paralg_read(self, 'theta'))
 		# update weights
 		delta = self.alpha * (self.label[i] - self.loss_func_gra(self.sample[i], self.theta)) * self.sample[i] + 2. * self.beta * self.alpha * self.theta
 	        # push delta
+		paralg.paralg_inc(self, 'theta', list(delta))
 		self.theta += delta
+	self.theta = np.array(paralg.paralg_read(self, 'theta'))
 		
     def solve(self):
 	from sklearn import datasets

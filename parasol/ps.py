@@ -62,7 +62,7 @@ class paralg(parasrv):
         if self.comm.Get_rank() == 0:
             suffix = '_' + str(random.randint(0, 100000))
         self.suffix = self.comm.bcast(suffix, root = 0)
-   
+        
     def crt_outfolder(self, folder): 
         if self.comm.Get_rank() == 0:
             if not os.path.exists(folder):
@@ -142,7 +142,8 @@ class paralg(parasrv):
             self.kvm[server_index].update(key, delta_row)
     
     def paralg_batch_inc_nodelta(self, newvalfunc, keyfunc = (lambda prefix, suffix : lambda index_st : prefix + index_st + suffix)('', ''), sz = 2):
-        if newvalfunc(0) != np.ndarray:
+        #if newvalfunc(0) != np.ndarray:
+	if !isinstance(newvalfunc, np.ndarray):
             for index in xrange(sz):
                 key = keyfunc(str(index))
                 server_index = self.ring.get_node(key)
