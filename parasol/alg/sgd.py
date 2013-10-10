@@ -28,8 +28,8 @@ class sgd(paralg):
     def __sgd_kernel(self): #sample, label, rounds = 20):
 	import random
 	m, n = self.sample.shape
-	self.theta = np.random.rand(n)
 	if self.rank == 0:
+	    self.theta = np.random.rand(n)
 	    paralg.paralg_write(self, 'theta', list(self.theta))
 	z = np.arange(m)
 	for it in xrange(self.rounds):
@@ -43,7 +43,8 @@ class sgd(paralg):
 		delta = self.alpha * (self.label[i] - self.loss_func_gra(self.sample[i], self.theta)) * self.sample[i] + 2. * self.beta * self.alpha * self.theta
 	        # push delta
 		paralg.paralg_inc(self, 'theta', list(delta))
-		self.theta += delta
+		self.theta = self.theta + delta
+	self.comm.barrier()
 	self.theta = np.array(paralg.paralg_read(self, 'theta'))
 		
     def solve(self):
