@@ -86,10 +86,17 @@ def outputmtx(outfile, rmap, cmap, bmtx, dim1, comm, mergeflag = False):
   else:
     packfs(fntmp, outfile, comm)
 
-def outputline(outplace, vector, sep, comm):
-    if comm.Get_rank() == 0:
-	f = open(outplace + 'result', 'wb')
-        for item in vector[:-1]: f.write(str(item) + sep)
-        f.write(str(vector[-1]) + '\n')
-        f.flush()
+def outputline(output, vector, sep):
+    f = open(output, 'wb')
+    for item in vector[:-1]: f.write(str(item) + sep)
+    f.write(str(vector[-1]) + '\n')
+    f.flush()
 
+# x, y = datasets.make_classification(10)
+def outputsamplelabel(output, sample, label, sep):
+    f = open(output, 'wb')
+    m, n = sample.shape
+    for i in xrange(m):
+        for item in sample[i]: f.write(str(item) + sep)
+        f.write(str(label[i]) + '\n')
+    f.flush()

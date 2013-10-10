@@ -82,4 +82,5 @@ class sgd(paralg):
 	return esum
 
     def write_sgd_result(self):
-	outputline(self.output, self.theta, '\t', self.comm)
+	if self.comm.Get_rank() == 0:
+	    outputline(self.output + 'result', self.theta, '\t')
