@@ -25,8 +25,11 @@ class sgd(paralg):
 	term = e ** (np.dot(x, theta))
 	return term / (1. + term)
  
-    def __sgd_kernel(self): #sample, label, rounds = 20):
+    def __sgd_kernel(self, debug = False): #sample, label, rounds = 20):
 	import random
+	from array import array
+	if debug:
+	    err = array('f', [])
 	m, n = self.sample.shape
 	if self.rank == 0:
 	    self.theta = np.random.rand(n)
@@ -44,9 +47,13 @@ class sgd(paralg):
 	        # push delta
 		paralg.paralg_inc(self, 'theta', delta)
 		self.theta = self.theta + delta
+		if debug:
+		    err.append(sum([(self.label[i] - self.loss_func_gra(self.sample[i], self.theta)) ** 2 for i in range(m)]))
 	self.comm.barrier()
 	self.theta = np.array(paralg.paralg_read(self, 'theta'))
-		
+	if debug:
+	    return err
+
     def solve(self):
 	from sklearn import datasets
     	#from parasol.utils.lineparser import parser_b
@@ -54,5 +61,11 @@ class sgd(paralg):
 	self.sample, self.label = datasets.make_classification(100, self.k)
 	self.sample = np.hstack((np.ones((self.sample.shape[0], 1)), self.sample))	
 	self.comm.barrier()
-	self.__sgd_kernel()
+	err = self.__sgd_kernel(True)
+	import matplotlib.pyplot as plt
+	print err
+	plt.plot(err, linewidth = 2)
+	plt.xlabel('Training example', fontsize = 20)
+	plt.ylabel('Error', fontsize = 20)
+	plt.show()
 	self.comm.barrier()
