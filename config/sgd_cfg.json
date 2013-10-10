@@ -1,0 +1,10 @@
+{
+"nserver" : 1,
+"nworker" : 1,
+"k" : 20,
+"input" : "/home/xunzhang/xunzhang/Data/book_interest/testfile",
+"output" : "/home/xunzhang/xunzhang/tmp/thusdayp/",
+"alpha" : 0.001,
+"beta" : 0.1,
+"rounds" : 3
+}
