@@ -39,7 +39,7 @@ class sgd(paralg):
 		# update weights
 		delta = self.alpha * (self.label[i] - self.loss_func_gra(self.sample[i], self.theta)) * self.sample[i] + 2. * self.beta * self.alpha * self.theta
 	        # push delta
-		theta += delta
+		self.theta += delta
 		
     def solve(self):
 	from sklearn import datasets
