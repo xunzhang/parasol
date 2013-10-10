@@ -89,7 +89,7 @@ def outputmtx(outfile, rmap, cmap, bmtx, dim1, comm, mergeflag = False):
 def outputline(outplace, vector, sep, comm):
     if comm.Get_rank() == 0:
 	f = open(outplace + 'result', 'wb')
-    for item in vector[:-1]: f.write(str(item) + sep)
-    f.write(str(vector[-1]) + '\n')
-    f.flush()
+        for item in vector[:-1]: f.write(str(item) + sep)
+        f.write(str(vector[-1]) + '\n')
+        f.flush()
 
