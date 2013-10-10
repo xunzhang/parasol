@@ -26,5 +26,12 @@ if __name__ == '__main__':
     rounds = json_obj['rounds'] 
     
     sgd_solver = sgd(comm, hosts_dict_lst, nworker, k, input_filename, output, alpha, beta, rounds)
+
     sgd_solver.solve()
-    print sgd_solver.theta
+    #print sgd_solver.theta
+    
+    esum = sgd_solver.calc_loss()
+    if comm.Get_rank() == 0:
+        print 'esum is', esum
+    
+    sgd_solver.write_sgd_result()

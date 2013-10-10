@@ -2,6 +2,7 @@
 
 import numpy as np
 from parasol.ps import paralg
+from parasol.writer.writer import outputline
 #from parasol.utils.parallel import npfactx
 
 class sgd(paralg):
@@ -43,7 +44,7 @@ class sgd(paralg):
 		# before calc, pull theta first
 		self.theta = np.array(paralg.paralg_read(self, 'theta'))
 		# update weights
-		delta = self.alpha * (self.label[i] - self.loss_func_gra(self.sample[i], self.theta)) * self.sample[i] + 2. * self.beta * self.alpha * self.theta
+		delta = self.alpha * (self.label[i] - self.loss_func_gra(self.sample[i], self.theta)) * self.sample[i] + #2. * self.beta * self.alpha * self.theta
 	        # push delta
 		paralg.paralg_inc(self, 'theta', delta)
 		self.theta = self.theta + delta
@@ -56,16 +57,29 @@ class sgd(paralg):
 
     def solve(self):
 	from sklearn import datasets
+	import matplotlib.pyplot as plt
     	#from parasol.utils.lineparser import parser_b
 	#paralg.loadinput(self, self.filename, parser_b('\t'))
-	self.sample, self.label = datasets.make_classification(100, self.k)
+	self.sample, self.label = datasets.make_classification(250, self.k)
 	self.sample = np.hstack((np.ones((self.sample.shape[0], 1)), self.sample))	
 	self.comm.barrier()
-	err = self.__sgd_kernel(True)
-	import matplotlib.pyplot as plt
-	print err
-	plt.plot(err, linewidth = 2)
-	plt.xlabel('Training example', fontsize = 20)
-	plt.ylabel('Error', fontsize = 20)
-	plt.show()
+	debug_flag = False
+        if debug_flag:
+	    err = self.__sgd_kernel(debug_flag)
+	    if self.rank == 0:
+	        print err
+	    plt.plot(err, linewidth = 2)
+	    plt.xlabel('Training example', fontsize = 20)
+	    plt.ylabel('Error', fontsize = 20)
+	    plt.show()
+	else:
+	    self.__sgd_kernel(debug_flag)
 	self.comm.barrier()
+
+    def calc_loss(self):
+	m, n = self.sample.shape
+	esum = sum( [(self.label[i] - self.loss_func_gra(self.sample[i], self.theta)) ** 2 for i in range(m)] )
+	return esum
+
+    def write_sgd_result(self):
+	outputline(self.output, self.theta, '\t', self.comm)
