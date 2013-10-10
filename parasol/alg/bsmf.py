@@ -156,7 +156,16 @@ class bsmf(paralg):
             paralg.paralg_batch_read(self, goo, (lambda index_st : 'q[:,' + index_st + ']_' + str(self.rank % self.b)), (lambda val : self.__stripoff(val, str(self.rank % self.b), 'q[:,', ']_')), sz2)
             #for index in xrange(sz1):
             #    key = 'p[' + str(index) + ',:]_' + str(self.rank / self.b)
-            #    self.p[index, :] = paralg.kernel(self):#, alpha = 0.0002, beta = 0.02, rounds = 5):
+            #    self.p[index, :] = paralg.paralg_read(self, key)
+            #for index in xrange(sz2):
+            #    key = key = 'q[:,' + str(index) + ']_' + str(self.rank % self.b)
+            #    self.q[:, index] = paralg.paralg_read(self, key)
+            
+    def __new_group_op_2(self, sz1, sz2):
+        paralg.paralg_batch_inc_nodelta(self, (lambda i : self.p[i, :]), (lambda index_st : 'p[' + index_st + ',:]_' + str(self.rank / self.b)), sz1)
+        paralg.paralg_batch_inc_nodelta(self, (lambda j : self.q[:, j]), (lambda index_st : 'q[:,' + index_st + ']_' + str(self.rank % self.b)), sz2)
+        
+    def __mf_kernel(self):#, alpha = 0.0002, beta = 0.02, rounds = 5):
         pl_sz = self.p.shape[0]
         ql_sz = self.q.shape[1]
         data_container = zip(self.mtx.row, self.mtx.col, self.mtx.data)
@@ -191,7 +200,6 @@ class bsmf(paralg):
         start = clock()
         #self.__group_op_1(pl_sz, ql_sz, 'pull')
         #self.__pack_op_1(pl_sz, ql_sz, 'pull')
-	#if self.rank == 0:
         self.__new_group_op_1(pl_sz, ql_sz, 'pull')
         self.comm.barrier()
         end = clock()
