@@ -14,9 +14,6 @@ class pykv(Exception):
     def __init__(self):
         self.pdict = {}
 
-    def srvclock_set(self, key, val):
-    	self.buf[]        
-    
     def set(self, key, val):
         #op_mutex.acquire()
         self.pdict[key] = val
@@ -102,5 +99,8 @@ if __name__ == '__main__':
     kvdict.set('ruby', [1, 2, 3])
     kvdict.incr('ruby', [1, 1, 1])
     print kvdict.get('ruby')
-
+    
+    kvdict.set('python', '1')
+    kvdict.incr('python', 1)
+    print kvdict.get('python')
     kvdict.finalize()
