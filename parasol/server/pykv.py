@@ -13,18 +13,6 @@ class pykv(Exception):
 
     def __init__(self):
         self.pdict = {}
-        self.pdict['serverclock'] = 0
-        self.clock_cnt = 0
-	self.s_bnd = 10
-	self.np_bnd = 100
-        self.init_clock_buffer()
-
-    def init_clock_buffer(self):
-        self.buf = []
-        [self.clock_buf.append([]) for i in xrange(self.s_bnd)]
-        for i in self.clock_buf:
-            for j in xrange(self.np_bnd):
-                i.append(0)
 
     def srvclock_set(self, key, val):
     	self.buf[]        

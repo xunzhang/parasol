@@ -52,7 +52,8 @@ class paralg(parasrv):
         self.comm = comm
 	if self.comm.Get_rank() == 0:
 	    self.init_client_clock()
-            self.kvm[self.ring.get_node('serverclock')].push('serverclock', 0)
+	    self.paralg_write('srv_sz', self.srv_sz)
+            #self.kvm[self.ring.get_node('serverclock')].push('serverclock', 0)
 	self.cache_para= {}
         self.ge_suffix()
         self.comm.barrier() 
