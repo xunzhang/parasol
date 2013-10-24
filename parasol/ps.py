@@ -52,6 +52,7 @@ class paralg(parasrv):
         self.comm = comm
 	if self.comm.Get_rank() == 0:
 	    self.init_client_clock()
+            self.kvm[self.ring.get_node('serverclock')].push('serverclock', 0)
 	self.cache_para= {}
         self.ge_suffix()
         self.comm.barrier() 
@@ -59,7 +60,7 @@ class paralg(parasrv):
     def init_client_clock(self):
         for i in xrange(self.limit_s):
             self.paralg_write('clientclock_' + str(i), 0)
-
+    
     def loadinput(self, filename, parser = (lambda l : l), pattern = 'linesplit', mix = False):
         from parasol.loader.crtblkmtx import ge_blkmtx
     	if pattern == 'linesplit':
@@ -79,7 +80,7 @@ class paralg(parasrv):
                 os.system('mkdir ' + folder)
    
     def iter_done(self):
-	clock_key = 'clientclock' + str(self.clock)
+	clock_key = 'clientclock_' + (str(self.clock) % self.limit_s)
 	self.kvm[self.ring.get_node(clock_key)].update(clock_key, 1)
         self.clock += 1
      
