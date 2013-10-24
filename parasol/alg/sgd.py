@@ -7,8 +7,8 @@ from parasol.writer.writer import outputline
 
 class sgd(paralg):
   
-    def __init__(self, comm, hosts_dict_lst, nworker, k, input_filename, output, alpha = 0.002, beta = 0.1, rounds = 3):
-    	paralg.__init__(self, comm, hosts_dict_lst)
+    def __init__(self, comm, hosts_dict_lst, nworker, k, input_filename, output, alpha = 0.002, beta = 0.1, rounds = 3, limit_s = 3):
+    	paralg.__init__(self, comm, hosts_dict_lst, limit_s)
 	self.rank = self.comm.Get_rank()
 	#self.a, self.b = npfactx(nworker)
 	self.k = k

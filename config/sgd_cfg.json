@@ -6,5 +6,6 @@
 "output" : "/mfs/user/wuhong/tmp/mondayres/",
 "alpha" : 0.001,
 "beta" : 0.01,
-"rounds" : 100
+"rounds" : 100,
+"limit_s" : 3
 }

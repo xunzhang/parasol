@@ -42,14 +42,24 @@ class parasrv(Exception):
 
 class paralg(parasrv):
      
-    def __init__(self, comm, hosts_dict_lst):
+    def __init__(self, comm, hosts_dict_lst, limit_s):
         parasrv.__init__(self, comm, hosts_dict_lst)
         #self.para_cfg = json.loads(open(para_cfg_file).read())
         #self.srv_sz = self.para_cfg['nserver']
+	self.clock = 0
+	self.stale_cache = 0
+	self.limit_s = limit_s
         self.comm = comm
+	if self.comm.Get_rank() == 0:
+	    self.init_client_clock()
+	self.cache_para= {}
         self.ge_suffix()
         self.comm.barrier() 
-    
+	 
+    def init_client_clock(self):
+        for i in xrange(self.limit_s):
+            self.paralg_write('clientclock_' + str(i), 0)
+
     def loadinput(self, filename, parser = (lambda l : l), pattern = 'linesplit', mix = False):
         from parasol.loader.crtblkmtx import ge_blkmtx
     	if pattern == 'linesplit':
@@ -67,11 +77,44 @@ class paralg(parasrv):
         if self.comm.Get_rank() == 0:
             if not os.path.exists(folder):
                 os.system('mkdir ' + folder)
-    
+   
+    def iter_done(self):
+	clock_key = 'clientclock' + str(self.clock)
+	self.kvm[self.ring.get_node(clock_key)].update(clock_key, 1)
+        self.clock += 1
+     
     def paralg_read(self, key):
-        return self.kvm[self.ring.get_node(key)].pull(key)
+	if self.stale_cache + self.limit_s >= self.clock:
+	    # cache hit
+	    return self.cached_para[key]
+        else:
+	    # cache miss
+            # pull from server until leading slowest less than s clocks
+            while self.stale_cache + self.limit_s < self.clock:
+                # while to wait slowest
+                self.stale_cache = self.kvm[self.ring.get_node('serverclock')].pull('serverclock')
+            return self.kvm[self.ring.get_node(key)].pull(key)
     
-    def __paralg_pack_batch_read(self, valfunc, keyfunc, stripfunc, sz):
+    def paralg_batch_read(self, valfunc, keyfunc = (lambda prefix, suffix : lambda index_st : prefix + index_st + suffix)('', ''), stripfunc = '', sz = 2, pack_flag = True):
+        cache_flag = True
+        if self.stale_cache + self.limit_s < self.clock:
+            cache_flag = False
+	while self.stale_cache + self.limit_s < self.clock:
+            self.stale_cache = self.kvm[self.ring.get_node('serverclock')].pull('serverclock')
+
+        if pack_flag and stripfunc:
+            self.__paralg_pack_batch_read(valfunc, keyfunc, stripfunc, sz, cache_flag)
+        else:
+            for index in xrange(sz):
+                key = keyfunc(str(index))
+                server_index = self.ring.get_node(key)
+		if cache_flag:
+		    valfunc(index, self.cached_para[key])
+		else:
+                    valfunc(index, self.kvm[server_index].pull(key))
+                    #valfunc(index) = self.kvm[server_index].pull(key)
+            
+    def __paralg_pack_batch_read(self, valfunc, keyfunc, stripfunc, sz, cache_flag):
         lst_dict = {}
         for i in xrange(self.srv_sz):
             lst_dict[i] = []
@@ -84,7 +127,13 @@ class paralg(parasrv):
         for i in xrange(self.srv_sz):
             if lst_dict[i]:
                 keys.append(lst_dict[i])
-                tmp.append(self.kvm[i].pull_multi(lst_dict[i]))
+		if cache_flag:
+		    tmpvalst = []
+                    for tmpkey in lst_dict[i]:
+                        tmpvalst.append(self.cached_para[tmpkey])
+		    tmp.append(tmpvalst)
+		else:
+                    tmp.append(self.kvm[i].pull_multi(lst_dict[i]))
         if len(keys) != len(tmp):
             print 'bug in __paralg_pack_batch_write.'
             sys.exit(1)
@@ -93,21 +142,25 @@ class paralg(parasrv):
                 index = int(stripfunc(keys[i][j])) 
                 valfunc(index, tmp[i][j])
         
-    def paralg_batch_read(self, valfunc, keyfunc = (lambda prefix, suffix : lambda index_st : prefix + index_st + suffix)('', ''), stripfunc = '', sz = 2, pack_flag = True):
-        if pack_flag and stripfunc:
-            self.__paralg_pack_batch_read(valfunc, keyfunc, stripfunc, sz)
+    def paralg_write(self, key, val):
+	if isinstance(val, np.ndarray):
+	    val = list(val)
+	# assign local para
+	self.cached_para[key] = val
+        self.kvm[self.ring.get_node(key)].push(key, val)
+
+    def paralg_batch_write(self, valfunc, keyfunc = (lambda prefix, suffix : lambda index_st : prefix + index_st + suffix)('', ''), sz = 2, pack_flag = True):
+        if pack_flag:
+            self.__paralg_pack_batch_write(valfunc, keyfunc, sz)
         else:
             for index in xrange(sz):
                 key = keyfunc(str(index))
                 server_index = self.ring.get_node(key)
-                valfunc(index, self.kvm[server_index].pull(key))
-                #valfunc(index) = self.kvm[server_index].pull(key)
-            
-    def paralg_write(self, key, val):
-	if isinstance(val, np.ndarray):
-	    val = list(val)
-        self.kvm[self.ring.get_node(key)].push(key, val)
-
+		# assign local para
+		tmpval = valfunc(index)
+		self.cached_para[key] = tmpval
+                self.kvm[server_index].push(key, tmpval)
+         
     def __paralg_pack_batch_write(self, valfunc, keyfunc = (lambda prefix, suffix : lambda index_st : prefix + index_st + suffix)('', ''), sz = 2):
         dict_dict = {}
         for i in xrange(self.srv_sz):
@@ -120,20 +173,17 @@ class paralg(parasrv):
         # real push
         for i in xrange(self.srv_sz):
             if dict_dict[i]:
+		# assign local para
+		for tmpkey in dict_dict[i].keys():
+		    self.cached_para[key] = dict_dict[i][tmpkey]
                 self.kvm[i].push_multi(dict_dict[i])
      
-    def paralg_batch_write(self, valfunc, keyfunc = (lambda prefix, suffix : lambda index_st : prefix + index_st + suffix)('', ''), sz = 2, pack_flag = True):
-        if pack_flag:
-            self.__paralg_pack_batch_write(valfunc, keyfunc, sz)
-        else:
-            for index in xrange(sz):
-                key = keyfunc(str(index))
-                server_index = self.ring.get_node(key)
-                self.kvm[server_index].push(key, valfunc(index))
-         
     def paralg_inc(self, key, delta):
 	if isinstance(delta, np.ndarray):
 	    delta = list(delta)
+	# update delta to local cache, make sure to read-my-writes
+	self.cached_para[key] += delta
+	# send update op to parameter server
         self.kvm[self.ring.get_node(key)].update(key, delta)
 
     # p = np.random.rand(5, 2)
@@ -143,6 +193,7 @@ class paralg(parasrv):
             key = keyfunc(str(index))
             server_index = self.ring.get_node(key)
             delta_row = deltafunc(index)
+	    self.cached_para[key] += delta_row
             self.kvm[server_index].update(key, delta_row)
     
     def paralg_batch_inc_nodelta(self, newvalfunc, keyfunc = (lambda prefix, suffix : lambda index_st : prefix + index_st + suffix)('', ''), sz = 2):
@@ -152,12 +203,14 @@ class paralg(parasrv):
                 key = keyfunc(str(index))
                 server_index = self.ring.get_node(key)
                 delta_row = list(newvalfunc(index) - self.kvm[server_index].pull(key))
+	        self.cached_para[key] += delta_row
                 self.kvm[server_index].update(key, delta_row)
         else:        
             for index in xrange(sz):
                 key = keyfunc(str(index))
                 server_index = self.ring.get_node(key)
                 delta_row = newvalfunc(index) - self.kvm[server_index].pull(key)
+	        self.cached_para[key] += delta_row
                 self.kvm[server_index].update(key, delta_row)
     
     def solve(self):

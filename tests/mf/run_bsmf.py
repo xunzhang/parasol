@@ -15,7 +15,8 @@ if __name__ == '__main__':
     hosts_dict_lst = get_hostnames_dict(options.hosts_name_st)
     
     #path = '/home/xunzhang/xunzhang/Proj/parasol/config/'
-    cfg_file = '/mfs/user/wuhong/release/parasol/config/bsmf_cfg.json'
+    #cfg_file = '/mfs/user/wuhong/release/parasol/config/bsmf_cfg.json'
+    cfg_file = '/home/xunzhang/xunzhang/Proj/parasol/config/bsmf_cfg.json'
     json_obj = json.loads(open(cfg_file).read())
     nsrv = json_obj['nserver']
     nworker = json_obj['nworker']
@@ -26,11 +27,12 @@ if __name__ == '__main__':
     alpha = json_obj['alpha']
     beta = json_obj['beta']
     rounds = json_obj['rounds']
+    limit_s = json_obj['limit_s']
     #alpha = json_obj.get('alpha')
     #beta = json_obj.get('beta')
     #rounds = json_obj.get('rounds')
 
-    bsmf_solver = bsmf(comm, hosts_dict_lst, nworker, k, input_filename, outp, outq, alpha, beta, rounds)
+    bsmf_solver = bsmf(comm, hosts_dict_lst, nworker, k, input_filename, outp, outq, alpha, beta, rounds, limit_s)
     #bsmf_solver = bsmf(comm, hosts_dict_lst, nworker, k, input_filename, outp, outq)
 
     bsmf_solver.solve()

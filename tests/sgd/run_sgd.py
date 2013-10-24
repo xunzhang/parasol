@@ -24,8 +24,9 @@ if __name__ == '__main__':
     alpha = json_obj['alpha']
     beta = json_obj['beta']
     rounds = json_obj['rounds'] 
-    
-    sgd_solver = sgd(comm, hosts_dict_lst, nworker, k, input_filename, output, alpha, beta, rounds)
+    limit_s = json_obj['limit_s']
+     
+    sgd_solver = sgd(comm, hosts_dict_lst, nworker, k, input_filename, output, alpha, beta, rounds, limit_s)
 
     sgd_solver.solve()
     #print sgd_solver.theta
