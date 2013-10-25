@@ -32,17 +32,15 @@ class sgd(paralg):
 	if debug:
 	    err = array('f', [])
 	m, n = self.sample.shape
-	if self.rank == 0:
-	    self.theta = np.random.rand(n)
-	    paralg.paralg_write(self, 'theta', self.theta)
+	#if self.rank == 0:
+	self.theta = np.random.rand(n)
+	paralg.paralg_write(self, 'theta', self.theta)
 	z = np.arange(m)
 	for it in xrange(self.rounds):
 	    # shuffle indics
 	    random.shuffle(z)
-	    print z
 	    # traverse samples
 	    for i in z:
-                print self.rank, i
 		# before calc, pull theta first
 		self.theta = np.array(paralg.paralg_read(self, 'theta'))
 		# update weights
