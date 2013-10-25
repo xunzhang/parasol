@@ -39,9 +39,10 @@ class sgd(paralg):
 	for it in xrange(self.rounds):
 	    # shuffle indics
 	    random.shuffle(z)
-	    #print z
+	    print z
 	    # traverse samples
 	    for i in z:
+                print self.rank, i
 		# before calc, pull theta first
 		self.theta = np.array(paralg.paralg_read(self, 'theta'))
 		# update weights

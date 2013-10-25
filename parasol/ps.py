@@ -88,6 +88,7 @@ class paralg(parasrv):
     def paralg_read(self, key):
 	if self.stale_cache + self.limit_s >= self.clock:
 	    # cache hit
+            print key
 	    return self.cached_para[key]
         else:
 	    # cache miss
