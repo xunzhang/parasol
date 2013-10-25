@@ -2,8 +2,8 @@
 "nserver" : 1,
 "nworker" : 1,
 "k" : 20,
-"input" : "/mfs/user/wuhong/Data/classification/0000.csv",
-"output" : "/mfs/user/wuhong/tmp/mondayres/",
+"input" : "/home/xunzhang/xunzhang/Data/classification/0000.csv",
+"output" : "/home/xunzhang/xunzhang/tmp/friday/",
 "alpha" : 0.001,
 "beta" : 0.01,
 "rounds" : 100
