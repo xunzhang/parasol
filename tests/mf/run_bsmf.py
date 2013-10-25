@@ -24,10 +24,24 @@ if __name__ == '__main__':
     input_filename = json_obj['input']
     outp = json_obj['outputp']
     outq = json_obj['outputq']
-    alpha = json_obj['alpha']
-    beta = json_obj['beta']
-    rounds = json_obj['rounds']
-    limit_s = json_obj['limit_s']
+    
+    # optional para
+    if json_obj.get('alpha'):
+        alpha = json_obj['alpha']
+    else:
+        alpha = 0.002
+    if json_obj.get('beta'):
+        beta = json_obj['beta']
+    else:
+        beta = 0.02
+    if json_obj.get('rounds'):
+        rounds = json_obj['rounds']
+    else:
+        rounds = 3
+    if json_obj.get('limit_s'):
+        limit_s = json_obj['limit_s']
+    else:
+        limit_s = 3
     #alpha = json_obj.get('alpha')
     #beta = json_obj.get('beta')
     #rounds = json_obj.get('rounds')
