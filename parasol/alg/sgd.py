@@ -44,12 +44,14 @@ class sgd(paralg):
 		# before calc, pull theta first
 		self.theta = np.array(paralg.paralg_read(self, 'theta'))
 		# update weights
+		print self.theta
 		delta = self.alpha * (self.label[i] - self.loss_func_gra(self.sample[i], self.theta)) * self.sample[i] #+ 2. * self.beta * self.alpha * self.theta
 	        # push delta
 		paralg.paralg_inc(self, 'theta', delta)
 		self.theta = self.theta + delta
 		if debug:
 		    err.append(sum([(self.label[i] - self.loss_func_gra(self.sample[i], self.theta)) ** 2 for i in range(m)]))
+		paralg.iter_done(self)
 	self.comm.barrier()
 	self.theta = np.array(paralg.paralg_read(self, 'theta'))
 	if debug:

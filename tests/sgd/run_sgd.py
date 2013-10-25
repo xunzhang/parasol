@@ -13,7 +13,7 @@ if __name__ == '__main__':
     options, args = optpar.parse_args()
     hosts_dict_lst = get_hostnames_dict(options.hosts_name_st)
 
-    cfg_file = '/mfs/user/wuhong/release/parasol/config/sgd_cfg.json'
+    cfg_file = '/home/xunzhang/xunzhang/Proj/parasol/config/sgd_cfg.json'
     json_obj = json.loads(open(cfg_file).read())
     nsrv = json_obj['nserver']
     nworker = json_obj['nworker']

@@ -50,11 +50,11 @@ class paralg(parasrv):
 	self.stale_cache = 0
 	self.limit_s = limit_s
         self.comm = comm
+	self.cached_para = {}
 	if self.comm.Get_rank() == 0:
 	    self.init_client_clock()
 	    self.paralg_write('srv_sz', self.srv_sz)
             #self.kvm[self.ring.get_node('serverclock')].push('serverclock', 0)
-	self.cache_para= {}
         self.ge_suffix()
         self.comm.barrier() 
 	 
@@ -81,7 +81,7 @@ class paralg(parasrv):
                 os.system('mkdir ' + folder)
    
     def iter_done(self):
-	clock_key = 'clientclock_' + (str(self.clock) % self.limit_s)
+	clock_key = 'clientclock_' + str(self.clock % self.limit_s)
 	self.kvm[self.ring.get_node(clock_key)].update(clock_key, 1)
         self.clock += 1
      
