@@ -21,10 +21,23 @@ if __name__ == '__main__':
     input_filename = json_obj['input']
     output = json_obj['output']
 
-    alpha = json_obj['alpha']
-    beta = json_obj['beta']
-    rounds = json_obj['rounds'] 
-    limit_s = json_obj['limit_s']
+    # optional para
+    if json_obj.get('alpha'):
+        alpha = json_obj['alpha']
+    else:
+        alpha = 0.001
+    if json_obj.get('beta'):
+        beta = json_obj['beta']
+    else:
+        beta = 0.01
+    if json_obj.get('rounds'):
+        rounds = json_obj['rounds']
+    else:
+        rounds = 10
+    if json_obj.get('limit_s'):
+        limit_s = json_obj['limit_s']
+    else:
+        limit_s = 3
      
     sgd_solver = sgd(comm, hosts_dict_lst, nworker, k, input_filename, output, alpha, beta, rounds, limit_s)
 
