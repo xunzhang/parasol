@@ -6,6 +6,6 @@
 "output" : "/home/xunzhang/xunzhang/tmp/mondayres/",
 "alpha" : 0.001,
 "beta" : 0.01,
-"rounds" : 10,
+"rounds" : 100,
 "limit_s" : 3
 }
