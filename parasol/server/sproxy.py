@@ -14,10 +14,13 @@ class sproxy(Exception):
 	self.push('serverclock', 0)
 	self.clt_sz = 0
     
-    def srv_sz_push(self, key, val):
+    def srv_sz_push(self, val):
         self.clt_sz = int(val)
         return True
-        
+    
+    def debug(self):
+        print 'self sz is ', self.clt_sz
+           
     def push(self, key, val):
         kvpoll_lst[self.fd].set(key, val)
     
@@ -33,12 +36,12 @@ class sproxy(Exception):
     def client_clock_inc(self, key, delta): 
 	if self.clock_dict.get(key):
 	    self.clock_dict[key] += 1
-	    #if self.clock_dict['clientclock_' + str(self.srv_clock)] == self.clt_sz:
-	    if self.clock_dict[key] == self.clt_sz:
-	        self.inc('serverclock', 1)
-	        self.clock_dict[key] = 0
 	else:
 	    self.clock_dict[key] = 1
+	#if self.clock_dict['clientclock_' + str(self.srv_clock)] == self.clt_sz:
+	if self.clock_dict[key] == self.clt_sz:
+	    self.inc('serverclock', 1)
+	    self.clock_dict[key] = 0
         return True
     
     def inc(self, key, delta):

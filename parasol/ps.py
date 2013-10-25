@@ -52,8 +52,8 @@ class paralg(parasrv):
         self.comm = comm
 	self.cached_para = {}
 	if self.comm.Get_rank() == 0:
-	    self.init_client_clock()
 	    self.paralg_write('srv_sz', self.srv_sz)
+	    #self.init_client_clock()
             #self.kvm[self.ring.get_node('serverclock')].push('serverclock', 0)
         self.ge_suffix()
         self.comm.barrier() 
@@ -184,7 +184,10 @@ class paralg(parasrv):
 	if isinstance(delta, np.ndarray):
 	    delta = list(delta)
 	# update delta to local cache, make sure to read-my-writes
-	self.cached_para[key] += delta
+	if isinstance(delta, np.ndarray) or isinstance(delta, list):
+            self.cached_para[key] = [self.cached_para[key][t] + delta[t] for t in xrange(len(delta))]	
+	else:
+	    self.cached_para[key] += delta
 	# send update op to parameter server
         self.kvm[self.ring.get_node(key)].update(key, delta)
 

@@ -34,6 +34,7 @@ if __name__ == '__main__':
         sys.exit(1)
 
     sock.bind('tcp://*:' + str(port))
+    sp = sproxy(0)
     while True:
         message = sock.recv() 
         l = message.split('parasol')
@@ -41,10 +42,10 @@ if __name__ == '__main__':
         oplst = [mp.unpackb(ii) for ii in l]
         #print oplst
         op = oplst[0]
-        sp = sproxy(0)
+        #sp = sproxy(0)
         if op == 'push':
 	    if oplst[1] == 'srv_sz':
-                v = sp.srv_sz_push(oplst[1], oplst[2])
+                v = sp.srv_sz_push(oplst[2])
             else:
                 v = sp.push(oplst[1], oplst[2])
         if op == 'inc':

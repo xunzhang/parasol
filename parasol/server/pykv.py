@@ -41,8 +41,9 @@ class pykv(Exception):
         if key not in self.pdict:
             return False
         try:
-            if type(delta) == type([1]) or type(delta) == type((1,2)):
-                self.pdict[key] = [self.pdict[key][t] + delta[t] for t in range(len(delta))] 
+            #if type(delta) == type([1]) or type(delta) == type((1,2)):
+            if isinstance(delta, list) or isinstance(delta, tuple):
+                self.pdict[key] = [self.pdict[key][t] + delta[t] for t in xrange(len(delta))] 
             else:
                 self.pdict[key] += delta
         except:
