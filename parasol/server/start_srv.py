@@ -44,8 +44,8 @@ if __name__ == '__main__':
         op = oplst[0]
         #sp = sproxy(0)
         if op == 'push':
-	    if oplst[1] == 'srv_sz':
-                v = sp.srv_sz_push(oplst[2])
+	    if oplst[1] == 'clt_sz':
+                v = sp.clt_sz_push(oplst[2])
             else:
                 v = sp.push(oplst[1], oplst[2])
         if op == 'inc':

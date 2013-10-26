@@ -14,13 +14,16 @@ class sproxy(Exception):
 	self.push('serverclock', 0)
 	self.clt_sz = 0
     
-    def srv_sz_push(self, val):
+    def clt_sz_push(self, val):
         self.clt_sz = int(val)
         return True
     
     def debug(self):
         print 'self sz is ', self.clt_sz
-           
+  
+    def debug2(self):
+        print 'serverclocks is ', self.pull('serverclock')
+             
     def push(self, key, val):
         kvpoll_lst[self.fd].set(key, val)
     

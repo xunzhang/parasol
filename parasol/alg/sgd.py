@@ -8,7 +8,7 @@ from parasol.writer.writer import outputline
 class sgd(paralg):
   
     def __init__(self, comm, hosts_dict_lst, nworker, k, input_filename, output, alpha = 0.002, beta = 0.1, rounds = 3, limit_s = 3):
-    	paralg.__init__(self, comm, hosts_dict_lst, limit_s)
+    	paralg.__init__(self, comm, hosts_dict_lst, nworker, limit_s)
 	self.rank = self.comm.Get_rank()
 	#self.a, self.b = npfactx(nworker)
 	self.k = k
@@ -32,9 +32,9 @@ class sgd(paralg):
 	if debug:
 	    err = array('f', [])
 	m, n = self.sample.shape
-	#if self.rank == 0:
-	self.theta = np.random.rand(n)
-	paralg.paralg_write(self, 'theta', self.theta)
+	if self.rank == 0:
+	    self.theta = np.random.rand(n)
+	    paralg.paralg_write(self, 'theta', self.theta)
 	z = np.arange(m)
 	for it in xrange(self.rounds):
 	    # shuffle indics

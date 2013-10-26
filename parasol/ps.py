@@ -42,7 +42,8 @@ class parasrv(Exception):
 
 class paralg(parasrv):
      
-    def __init__(self, comm, hosts_dict_lst, limit_s):
+    def __init__(self, comm, hosts_dict_lst, nworker, limit_s):
+        self.nworker = nworker
         parasrv.__init__(self, comm, hosts_dict_lst)
         #self.para_cfg = json.loads(open(para_cfg_file).read())
         #self.srv_sz = self.para_cfg['nserver']
@@ -51,16 +52,18 @@ class paralg(parasrv):
 	self.limit_s = limit_s
         self.comm = comm
 	self.cached_para = {}
+        self.clockserver = 0
 	if self.comm.Get_rank() == 0:
-	    self.paralg_write('srv_sz', self.srv_sz)
+	    #self.paralg_write('clt_sz', self.nworker)
+            self.kvm[self.clockserver].push('clt_sz', self.nworker)
 	    #self.init_client_clock()
             #self.kvm[self.ring.get_node('serverclock')].push('serverclock', 0)
         self.ge_suffix()
         self.comm.barrier() 
 	 
-    def init_client_clock(self):
-        for i in xrange(self.limit_s):
-            self.paralg_write('clientclock_' + str(i), 0)
+    #def init_client_clock(self):
+    #    for i in xrange(self.limit_s):
+    #        self.paralg_write('clientclock_' + str(i), 0)
     
     def loadinput(self, filename, parser = (lambda l : l), pattern = 'linesplit', mix = False):
         from parasol.loader.crtblkmtx import ge_blkmtx
@@ -82,10 +85,14 @@ class paralg(parasrv):
    
     def iter_done(self):
 	clock_key = 'clientclock_' + str(self.clock % self.limit_s)
-	self.kvm[self.ring.get_node(clock_key)].update(clock_key, 1)
+	self.kvm[self.clockserver].update(clock_key, 1)
         self.clock += 1
      
     def paralg_read(self, key):
+        if self.clock == 0:
+	    self.cached_para[key] = self.kvm[self.ring.get_node(key)].pull(key)
+            return self.cached_para[key]
+            #return self.kvm[self.ring.get_node(key)].pull(key)
 	if self.stale_cache + self.limit_s >= self.clock:
 	    # cache hit
 	    return self.cached_para[key]
@@ -94,7 +101,11 @@ class paralg(parasrv):
             # pull from server until leading slowest less than s clocks
             while self.stale_cache + self.limit_s < self.clock:
                 # while to wait slowest
-                self.stale_cache = self.kvm[self.ring.get_node('serverclock')].pull('serverclock')
+                print self.rank, 'stale_cache', self.stale_cache
+                print self.rank, 'limit_s', self.limit_s
+                print self.rank, 'clock', self.clock
+		print 'waiting'
+                self.stale_cache = self.kvm[self.clockserver].pull('serverclock')
             return self.kvm[self.ring.get_node(key)].pull(key)
     
     def paralg_batch_read(self, valfunc, keyfunc = (lambda prefix, suffix : lambda index_st : prefix + index_st + suffix)('', ''), stripfunc = '', sz = 2, pack_flag = True):
@@ -102,7 +113,7 @@ class paralg(parasrv):
         if self.stale_cache + self.limit_s < self.clock:
             cache_flag = False
 	while self.stale_cache + self.limit_s < self.clock:
-            self.stale_cache = self.kvm[self.ring.get_node('serverclock')].pull('serverclock')
+            self.stale_cache = self.kvm[self.clockserver].pull('serverclock')
 
         if pack_flag and stripfunc:
             self.__paralg_pack_batch_read(valfunc, keyfunc, stripfunc, sz, cache_flag)
