@@ -1,11 +1,11 @@
 {
-"nserver" : 1,
-"nworker" : 1,
+"nserver" : 4,
+"nworker" : 4,
 "k" : 20,
-"input" : "/mfs/user/wuhong/book_interest/testfile",
-"outputp" : "/mfs/user/wuhong/tmp/mondayp/",
-"outputq" : "/mfs/user/wuhong/tmp/mondayq/",
+"input" : "/home/xunzhang/xunzhang/Data/book_interest/testfile",
+"outputp" : "/home/xunzhang/xunzhang/tmp/thusdayp/",
+"outputq" : "/home/xunzhang/xunzhang/tmp/thusdayq/",
 "alpha" : 0.002,
 "beta" : 0.02,
-"rounds" : 3
+"rounds" : 10
 }

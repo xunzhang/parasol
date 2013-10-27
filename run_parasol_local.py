@@ -33,7 +33,7 @@ if __name__ == '__main__':
             print 'config file must contain "nworker"'
             sys.exit(1)
 
-    start_parasrv_cmd = 'python ./parasol/server/start_srv.py --hostname ' + socket.gethostname() 
+    start_parasrv_cmd = 'mpirun -n ' + str(nsrv) + ' python ./parasol/server/start_srv.py --hostname ' + socket.gethostname() 
     print start_parasrv_cmd
     subprocess.Popen(start_parasrv_cmd, shell = True)
 
