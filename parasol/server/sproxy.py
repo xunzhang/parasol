@@ -17,6 +17,10 @@ class sproxy(Exception):
     def clt_sz_push(self, val):
         self.clt_sz = int(val)
         return True
+
+    def clt_sz_inc(self, delta_val):
+        self.clt_sz += int(delta_val)
+        return True
     
     def debug(self):
         print 'self sz is ', self.clt_sz
@@ -42,7 +46,10 @@ class sproxy(Exception):
 	else:
 	    self.clock_dict[key] = 1
 	#if self.clock_dict['clientclock_' + str(self.srv_clock)] == self.clt_sz:
-	if self.clock_dict[key] == self.clt_sz:
+	if self.clock_dict[key] >= self.clt_sz:
+	    #if self.clock_dict[key] > self.clt_sz:
+            #    print 'debug', 'clt_sz', self.clt_sz
+	    #	print 'debug', 'differenb', self.clock_dict[key] - self.clt_sz
 	    self.inc('serverclock', 1)
 	    self.clock_dict[key] = 0
         return True

@@ -42,17 +42,19 @@ class parasrv(Exception):
 
 class paralg(parasrv):
      
-    def __init__(self, comm, hosts_dict_lst, nworker, limit_s):
+    def __init__(self, comm, hosts_dict_lst, nworker, rounds = 1, limit_s = 3):
         self.nworker = nworker
         parasrv.__init__(self, comm, hosts_dict_lst)
         #self.para_cfg = json.loads(open(para_cfg_file).read())
         #self.srv_sz = self.para_cfg['nserver']
 	self.clock = 0
 	self.stale_cache = 0
+	self.rounds = rounds
 	self.limit_s = limit_s
         self.comm = comm
 	self.cached_para = {}
         self.clockserver = 0
+	self.dataset_sz = 0
 	if self.comm.Get_rank() == 0:
 	    #self.paralg_write('clt_sz', self.nworker)
             self.kvm[self.clockserver].push('clt_sz', self.nworker)
@@ -69,8 +71,10 @@ class paralg(parasrv):
         from parasol.loader.crtblkmtx import ge_blkmtx
     	if pattern == 'linesplit':
 	    self.linelst = ge_blkmtx(filename, self.comm, parser, pattern, mix)
+	    self.dataset_sz = len(self.linelst) * self.rounds
         else:
 	    self.rmap, self.cmap, self.dmap, self.mtx = ge_blkmtx(filename, self.comm, parser, pattern, mix)
+            self.dataset_sz = self.mtx.shape[0] * self.rounds
      
     def ge_suffix(self):
         suffix = ''
@@ -87,6 +91,8 @@ class paralg(parasrv):
 	clock_key = 'clientclock_' + str(self.clock % self.limit_s)
 	self.kvm[self.clockserver].update(clock_key, 1)
         self.clock += 1
+	if self.clock == self.dataset_sz:
+            self.kvm[self.clockserver].update('clt_sz', -1)
      
     def paralg_read(self, key):
         if self.clock == 0:
@@ -101,11 +107,12 @@ class paralg(parasrv):
             # pull from server until leading slowest less than s clocks
             while self.stale_cache + self.limit_s < self.clock:
                 # while to wait slowest
-                print self.rank, 'stale_cache', self.stale_cache
-                print self.rank, 'limit_s', self.limit_s
-                print self.rank, 'clock', self.clock
-		print 'waiting'
+                #print self.rank, 'stale_cache', self.stale_cache
+                #print self.rank, 'limit_s', self.limit_s
+                #print self.rank, 'clock', self.clock
+		#print self.rank, 'waiting'
                 self.stale_cache = self.kvm[self.clockserver].pull('serverclock')
+                #print self.rank, ' get ', self.stale_cache
             return self.kvm[self.ring.get_node(key)].pull(key)
     
     def paralg_batch_read(self, valfunc, keyfunc = (lambda prefix, suffix : lambda index_st : prefix + index_st + suffix)('', ''), stripfunc = '', sz = 2, pack_flag = True):

@@ -49,7 +49,9 @@ if __name__ == '__main__':
             else:
                 v = sp.push(oplst[1], oplst[2])
         if op == 'inc':
-            if oplst[1].startswith('clientclock'):
+	    if oplst[1] == 'clt_sz':
+                v = sp.clt_sz_inc(oplst[2])
+            elif oplst[1].startswith('clientclock'):
                 v = sp.client_clock_inc(oplst[1], oplst[2])
             else:
                 v = sp.inc(oplst[1], oplst[2])

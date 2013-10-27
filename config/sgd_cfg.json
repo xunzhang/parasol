@@ -1,5 +1,5 @@
 {
-"nserver" : 1,
+"nserver" : 2,
 "nworker" : 4,
 "k" : 20,
 "input" : "/home/xunzhang/xunzhang/Data/classification/0000.csv",
