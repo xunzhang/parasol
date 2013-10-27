@@ -15,7 +15,7 @@ from parasol.ps import paralg
 class bsmf(paralg):
 
     def __init__(self, comm, hosts_dict_lst, nworker, k, input_filename, outp, outq, alpha = 0.002, beta = 0.02, rounds = 3, limit_s = 3):
-        paralg.__init__(self, comm, hosts_dict_lst, limit_s)
+        paralg.__init__(self, comm, hosts_dict_lst, rounds, limit_s)
         self.rank = self.comm.Get_rank()
         self.a, self.b = npfact2D(nworker)
         self.k = k
@@ -194,6 +194,7 @@ class bsmf(paralg):
             self.__new_group_op_2(pl_sz, ql_sz)
             end = clock()
             print 'communication time is', end - start
+	    paralg.iter_done(self)
     
         # last pull p, may not calc on this procs, but can be calced on others
         self.comm.barrier()

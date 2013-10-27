@@ -116,6 +116,12 @@ class paralg(parasrv):
             return self.kvm[self.ring.get_node(key)].pull(key)
     
     def paralg_batch_read(self, valfunc, keyfunc = (lambda prefix, suffix : lambda index_st : prefix + index_st + suffix)('', ''), stripfunc = '', sz = 2, pack_flag = True):
+	if self.clock == 0:
+	    for index in xrange(sz):
+                key = keyfunc(str(index))
+	        self.cached_para[key] = self.kvm[self.ring.get_node(key)].pull(key)
+                valfunc(index, self.cached_para[key])
+	    return
         cache_flag = True
         if self.stale_cache + self.limit_s < self.clock:
             cache_flag = False
@@ -195,14 +201,13 @@ class paralg(parasrv):
             if dict_dict[i]:
 		# assign local para
 		for tmpkey in dict_dict[i].keys():
-		    self.cached_para[key] = dict_dict[i][tmpkey]
+		    self.cached_para[tmpkey] = dict_dict[i][tmpkey]
                 self.kvm[i].push_multi(dict_dict[i])
      
     def paralg_inc(self, key, delta):
-	if isinstance(delta, np.ndarray):
-	    delta = list(delta)
 	# update delta to local cache, make sure to read-my-writes
 	if isinstance(delta, np.ndarray) or isinstance(delta, list):
+	    delta = list(delta)
             self.cached_para[key] = [self.cached_para[key][t] + delta[t] for t in xrange(len(delta))]	
 	else:
 	    self.cached_para[key] += delta
@@ -221,12 +226,12 @@ class paralg(parasrv):
     
     def paralg_batch_inc_nodelta(self, newvalfunc, keyfunc = (lambda prefix, suffix : lambda index_st : prefix + index_st + suffix)('', ''), sz = 2):
         #if newvalfunc(0) != np.ndarray:
-	if not isinstance(newvalfunc, np.ndarray):
+	if isinstance(newvalfunc(0), np.ndarray) or isinstance(newvalfunc(0), list):
             for index in xrange(sz):
                 key = keyfunc(str(index))
                 server_index = self.ring.get_node(key)
                 delta_row = list(newvalfunc(index) - self.kvm[server_index].pull(key))
-	        self.cached_para[key] += delta_row
+	        self.cached_para[key] = [self.cached_para[key][t] + delta_row[t] for t in xrange(len(delta_row))]
                 self.kvm[server_index].update(key, delta_row)
         else:        
             for index in xrange(sz):
