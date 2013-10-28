@@ -15,7 +15,7 @@ from parasol.ps import paralg
 class bsmf(paralg):
 
     def __init__(self, comm, hosts_dict_lst, nworker, k, input_filename, outp, outq, alpha = 0.002, beta = 0.02, rounds = 3, limit_s = 3):
-        paralg.__init__(self, comm, hosts_dict_lst, rounds, limit_s)
+        paralg.__init__(self, comm, hosts_dict_lst, nworker, rounds, limit_s)
         self.rank = self.comm.Get_rank()
         self.a, self.b = npfact2D(nworker)
         self.k = k
@@ -171,13 +171,13 @@ class bsmf(paralg):
         data_container = zip(self.mtx.row, self.mtx.col, self.mtx.data)
         print 'data size is', len(data_container)
         for it in xrange(self.rounds):
-            print 'round', it
+            print 'round', it, self.comm.Get_rank()
             if it != 0:
                 #self.__group_op_1(pl_sz, ql_sz, 'pull')
                 #self.__pack_op_1(pl_sz, ql_sz, 'pull')
                 self.__new_group_op_1(pl_sz, ql_sz, 'pull')
             print 'after round pull'
-            
+	    
             start = clock()
             random.shuffle(data_container)
             end = clock()
@@ -195,7 +195,7 @@ class bsmf(paralg):
             end = clock()
             print 'communication time is', end - start
 	    paralg.iter_done(self)
-    
+
         # last pull p, may not calc on this procs, but can be calced on others
         self.comm.barrier()
         start = clock()

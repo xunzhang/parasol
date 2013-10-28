@@ -4,7 +4,8 @@ if __name__ == '__main__':
     import json
     from mpi4py import MPI
     from optparse import OptionParser
-    from parasol.alg.bsmf import bsmf
+    #from parasol.alg.bsmf import bsmf
+    from parasol.alg.bsmf_trivial import bsmf
     from parasol.utils.gethostnames import get_hostnames_dict
     comm = MPI.COMM_WORLD
    
@@ -45,7 +46,6 @@ if __name__ == '__main__':
     #alpha = json_obj.get('alpha')
     #beta = json_obj.get('beta')
     #rounds = json_obj.get('rounds')
-
     bsmf_solver = bsmf(comm, hosts_dict_lst, nworker, k, input_filename, outp, outq, alpha, beta, rounds, limit_s)
     #bsmf_solver = bsmf(comm, hosts_dict_lst, nworker, k, input_filename, outp, outq)
 

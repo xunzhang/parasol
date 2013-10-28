@@ -97,10 +97,14 @@ class paralg(parasrv):
     def paralg_read(self, key):
         if self.clock == 0:
 	    self.cached_para[key] = self.kvm[self.ring.get_node(key)].pull(key)
+	    if self.comm.Get_rank() == 0:
+	        print 'aaaaaaaaaaaaaaaaaaa0', self.cached_para[key]
             return self.cached_para[key]
             #return self.kvm[self.ring.get_node(key)].pull(key)
 	if self.stale_cache + self.limit_s >= self.clock:
 	    # cache hit
+	    if self.comm.Get_rank() == 0:
+		print 'aaaaaaaaaaaaaaaaaaaaaaa1', self.cached_para[key]
 	    return self.cached_para[key]
         else:
 	    # cache miss
@@ -113,9 +117,11 @@ class paralg(parasrv):
 		#print self.rank, 'waiting'
                 self.stale_cache = self.kvm[self.clockserver].pull('serverclock')
                 #print self.rank, ' get ', self.stale_cache
+	    if self.comm.Get_rank() == 0:
+                print 'aaaaaaaaaaaaaaaaaaaaaaaaaaa2', self.kvm[self.ring.get_node(key)].pull(key)
             return self.kvm[self.ring.get_node(key)].pull(key)
     
-    def paralg_batch_read(self, valfunc, keyfunc = (lambda prefix, suffix : lambda index_st : prefix + index_st + suffix)('', ''), stripfunc = '', sz = 2, pack_flag = True):
+    def paralg_batch_read(self, valfunc, keyfunc = (lambda prefix, suffix : lambda index_st : prefix + index_st + suffix)('', ''), stripfunc = '', sz = 2, pack_flag = False):
 	if self.clock == 0:
 	    for index in xrange(sz):
                 key = keyfunc(str(index))
@@ -137,6 +143,7 @@ class paralg(parasrv):
 		if cache_flag:
 		    valfunc(index, self.cached_para[key])
 		else:
+		    #print 'fuckkkk', self.kvm[server_index].pull(key)
                     valfunc(index, self.kvm[server_index].pull(key))
                     #valfunc(index) = self.kvm[server_index].pull(key)
             
@@ -171,11 +178,13 @@ class paralg(parasrv):
     def paralg_write(self, key, val):
 	if isinstance(val, np.ndarray):
 	    val = list(val)
+	if self.comm.Get_rank() == 0:
+	    print 'check write', val, key
 	# assign local para
 	self.cached_para[key] = val
         self.kvm[self.ring.get_node(key)].push(key, val)
 
-    def paralg_batch_write(self, valfunc, keyfunc = (lambda prefix, suffix : lambda index_st : prefix + index_st + suffix)('', ''), sz = 2, pack_flag = True):
+    def paralg_batch_write(self, valfunc, keyfunc = (lambda prefix, suffix : lambda index_st : prefix + index_st + suffix)('', ''), sz = 2, pack_flag = False):
         if pack_flag:
             self.__paralg_pack_batch_write(valfunc, keyfunc, sz)
         else:
@@ -184,6 +193,7 @@ class paralg(parasrv):
                 server_index = self.ring.get_node(key)
 		# assign local para
 		tmpval = valfunc(index)
+		print 'check', key, tmpval
 		self.cached_para[key] = tmpval
                 self.kvm[server_index].push(key, tmpval)
          
@@ -211,6 +221,8 @@ class paralg(parasrv):
             self.cached_para[key] = [self.cached_para[key][t] + delta[t] for t in xrange(len(delta))]	
 	else:
 	    self.cached_para[key] += delta
+	if self.comm.Get_rank() == 0:
+	    print 'check inc', delta, key
 	# send update op to parameter server
         self.kvm[self.ring.get_node(key)].update(key, delta)
 

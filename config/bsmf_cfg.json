@@ -1,5 +1,5 @@
 {
-"nserver" : 2,
+"nserver" : 1,
 "nworker" : 1,
 "k" : 20,
 "input" : "/home/xunzhang/xunzhang/Data/book_interest/testfile",
@@ -7,6 +7,6 @@
 "outputq" : "/home/xunzhang/xunzhang/tmp/thusdayq/",
 "alpha" : 0.002,
 "beta" : 0.02,
-"rounds" : 5,
-"limit_s" : 3
+"rounds" : 10,
+"limit_s" : 1
 }
