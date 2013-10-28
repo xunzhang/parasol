@@ -1,12 +1,12 @@
 {
 "nserver" : 1,
-"nworker" : 1,
+"nworker" : 4,
 "k" : 20,
 "input" : "/home/xunzhang/xunzhang/Data/book_interest/testfile",
 "outputp" : "/home/xunzhang/xunzhang/tmp/thusdayp/",
 "outputq" : "/home/xunzhang/xunzhang/tmp/thusdayq/",
 "alpha" : 0.002,
 "beta" : 0.02,
-"rounds" : 10,
-"limit_s" : 1
+"rounds" : 30,
+"limit_s" : 3 
 }

@@ -33,9 +33,12 @@ class bsmf(paralg):
         self.comm.barrier()
     
     def __mf_kernel(self):#, alpha = 0.0002, beta = 0.02, rounds = 5):
+	import copy
         pl_sz = self.p.shape[0]
         ql_sz = self.q.shape[1]
         data_container = zip(self.mtx.row, self.mtx.col, self.mtx.data)
+        print 'debug1', len(self.mtx.row), len(self.mtx.col), len(self.mtx.data), self.comm.Get_rank()
+        print 'debug2', pl_sz, ql_sz, self.comm.Get_rank()
         print 'data size is', len(data_container)
         for it in xrange(self.rounds):
             print 'round', it, self.comm.Get_rank()
@@ -45,30 +48,27 @@ class bsmf(paralg):
                 #self.__new_group_op_1(pl_sz, ql_sz, 'pull')
 		for index in xrange(pl_sz):
 		    key = 'p[' + str(index) + ',:]_' + str(self.rank / self.b)
-		    srv = self.ring.get_node(key)
-		    if self.comm.Get_rank() == 0:
-                        print '00000000000000000000', paralg.paralg_read(self, key), key
+		    #srv = self.ring.get_node(key)
 		    self.p[index, :] = paralg.paralg_read(self, key)
 		for index in xrange(ql_sz):
 		    key = 'q[:,' + str(index) + ']_' + str(self.rank % self.b)
-		    srv = self.ring.get_node(key)
-		    if self.comm.Get_rank() == 0:
-                        print '111111111111111111111', paralg.paralg_read(self, key), key
+		    #srv = self.ring.get_node(key)
 		    self.q[:,index] = paralg.paralg_read(self, key)
             print 'after round pull'
-	    
+	    old_p = copy.deepcopy(self.p)
+            old_q = copy.deepcopy(self.q)
+            #for i, j, v in data_container:
+            #    for ki in xrange(self.k):
+            #        old_p[i][ki] = self.p[i][ki]
+            #        old_q[ki][j] = self.q[ki][j]
+	     
             start = clock()
             random.shuffle(data_container)
             end = clock()
             print 'shuffle time is', end - start
             
             for i, j, v in data_container:
-		if self.comm.Get_rank() == 0:
-		    print 'comeon', v, self.p[i, :], i
-                    print 'ccccc', self.q[:, j], j
                 eij = v - np.dot(self.p[i, :], self.q[:, j])
-                if self.comm.Get_rank() == 0:
-		    print 'ddddd', eij 
                 for ki in xrange(self.k):
                     self.p[i][ki] += self.alpha * (2 * eij * self.q[ki][j] - self.beta * self.p[i][ki])
                     self.q[ki][j] += self.alpha * (2 * eij * self.p[i][ki] - self.beta * self.q[ki][j])
@@ -79,20 +79,16 @@ class bsmf(paralg):
 	    for index in xrange(pl_sz):
 		key = 'p[' + str(index) + ',:]_' + str(self.rank / self.b)
                 srv = self.ring.get_node(key)
-                deltap = list(self.p[index, :] - self.kvm[srv].pull(key))
-		if self.comm.Get_rank() == 0:
-		    print 'fiunaly', self.p[index, :]
-		    print 'totalsy', self.kvm[srv].pull(key)
-		    print 'why1', key, deltap
+		deltap = list(self.p[index, :] - old_p[index, :])
+                #deltap = list(self.p[index, :] - pp[index, :])
+                #deltap = list(self.p[index, :] - self.kvm[srv].pull(key))
                 paralg.paralg_inc(self, key, deltap)
 	    for index in xrange(ql_sz):
 		key = 'q[:,' + str(index) + ']_' + str(self.rank % self.b)
                 srv = self.ring.get_node(key)
-                deltaq = list(self.q[:,index] - self.kvm[srv].pull(key))
-		if self.comm.Get_rank() == 0:
-		    print 'qfiunaly', self.q[:,index]
-		    print 'qtotalsy', self.kvm[srv].pull(key)
-		    print 'qwhy1', key, deltaq
+		deltaq = list(self.q[:, index] - old_q[:, index])
+                #deltaq = list(self.q[:,index] - qq[:, index])
+                #deltaq = list(self.q[:,index] - self.kvm[srv].pull(key))
                 paralg.paralg_inc(self, key, deltaq)
             end = clock()
             print 'communication time is', end - start
