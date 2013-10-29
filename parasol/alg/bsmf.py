@@ -162,12 +162,16 @@ class bsmf(paralg):
             #    self.q[:, index] = paralg.paralg_read(self, key)
             
     def __new_group_op_2(self, sz1, sz2):
-        paralg.paralg_batch_inc_nodelta(self, (lambda i : self.p[i, :]), (lambda index_st : 'p[' + index_st + ',:]_' + str(self.rank / self.b)), sz1)
-        paralg.paralg_batch_inc_nodelta(self, (lambda j : self.q[:, j]), (lambda index_st : 'q[:,' + index_st + ']_' + str(self.rank % self.b)), sz2)
+        #paralg.paralg_batch_inc_nodelta(self, (lambda i : self.p[i, :]), (lambda index_st : 'p[' + index_st + ',:]_' + str(self.rank / self.b)), sz1)
+        #paralg.paralg_batch_inc_nodelta(self, (lambda j : self.q[:, j]), (lambda index_st : 'q[:,' + index_st + ']_' + str(self.rank % self.b)), sz2)
+        paralg.paralg_batch_inc(self, (lambda i : self.delta_p[i, :]), (lambda index_st : 'p[' + index_st + ',:]_' + str(self.rank / self.b)), sz1)
+        paralg.paralg_batch_inc(self, (lambda j : self.delta_q[:, j]), (lambda index_st : 'q[:,' + index_st + ']_' + str(self.rank % self.b)), sz2)
         
     def __mf_kernel(self):#, alpha = 0.0002, beta = 0.02, rounds = 5):
         pl_sz = self.p.shape[0]
         ql_sz = self.q.shape[1]
+	self.delta_p = np.random.rand(pl_sz, self.k)
+        self.delta_q = np.random.rand(self.k, ql_sz)
         data_container = zip(self.mtx.row, self.mtx.col, self.mtx.data)
         print 'data size is', len(data_container)
         for it in xrange(self.rounds):
@@ -177,6 +181,13 @@ class bsmf(paralg):
                 #self.__pack_op_1(pl_sz, ql_sz, 'pull')
                 self.__new_group_op_1(pl_sz, ql_sz, 'pull')
             print 'after round pull'
+   
+            for i in xrange(self.delta_p.shape[0]):
+                for j in xrange(self.delta_p.shape[1]):
+                    self.delta_p[i][j] = 0.
+            for i in xrange(self.delta_q.shape[0]):
+                for j in xrange(self.delta_q.shape[1]):
+                    self.delta_q[i][j] = 0.
 	    
             start = clock()
             random.shuffle(data_container)
@@ -186,8 +197,12 @@ class bsmf(paralg):
             for i, j, v in data_container:
                 eij = v - np.dot(self.p[i, :], self.q[:, j])
                 for ki in xrange(self.k):
-                    self.p[i][ki] += self.alpha * (2 * eij * self.q[ki][j] - self.beta * self.p[i][ki])
-                    self.q[ki][j] += self.alpha * (2 * eij * self.p[i][ki] - self.beta * self.q[ki][j])
+                    self.delta_p[i][ki] = self.alpha * (2 * eij * self.q[ki][j] - self.beta * self.p[i][ki])
+                    self.delta_q[ki][j] = self.alpha * (2 * eij * self.p[i][ki] - self.beta * self.q[ki][j])
+                    self.p[i][ki] += self.delta_p[i][ki]
+                    self.q[ki][j] += self.delta_q[ki][j]
+                    #self.p[i][ki] += self.alpha * (2 * eij * self.q[ki][j] - self.beta * self.p[i][ki])
+                    #self.q[ki][j] += self.alpha * (2 * eij * self.p[i][ki] - self.beta * self.q[ki][j])
             start = clock()
             print 'local calc time is', start - end
             

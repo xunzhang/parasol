@@ -222,12 +222,20 @@ class paralg(parasrv):
     # p = np.random.rand(5, 2)
     # print (lambda x : list(p[x,:]))(1)
     def paralg_batch_inc(self, deltafunc, keyfunc = (lambda prefix, suffix : lambda index_st : prefix + index_st + suffix)('', ''), sz = 2):
-        for index in xrange(sz):
-            key = keyfunc(str(index))
-            server_index = self.ring.get_node(key)
-            delta_row = deltafunc(index)
-	    self.cached_para[key] += delta_row
-            self.kvm[server_index].update(key, delta_row)
+        if isinstance(deltafunc(0), np.darray) or isinstance(deltafunc(0), list):
+            for index in xrange(sz):
+                key = keyfunc(str(index))
+                server_index = self.ring.get_node(key)
+                delta_row = list(deltafunc(index))
+                self.cached_para[key] = [self.cached_para[key][t] + delta_row[t] for t in xrange(len(delta_row))] 
+                self.kvm[server_index].update(key, delta_row)
+        else:
+            for index in xrange(sz):
+                key = keyfunc(str(index))
+                server_index = self.ring.get_node(key)
+                delta_row = deltafunc(index)
+	        self.cached_para[key] += delta_row
+                self.kvm[server_index].update(key, delta_row)
     
     def paralg_batch_inc_nodelta(self, newvalfunc, keyfunc = (lambda prefix, suffix : lambda index_st : prefix + index_st + suffix)('', ''), sz = 2):
         #if newvalfunc(0) != np.ndarray:
