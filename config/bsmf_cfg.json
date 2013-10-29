@@ -7,6 +7,6 @@
 "outputq" : "/home/xunzhang/xunzhang/tmp/thusdayq/",
 "alpha" : 0.002,
 "beta" : 0.02,
-"rounds" : 80,
-"limit_s" : 1 
+"rounds" : 10,
+"limit_s" : 3 
 }

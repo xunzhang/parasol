@@ -74,9 +74,12 @@ class paralg(parasrv):
 	    self.dataset_sz = len(self.linelst) * self.rounds
         else:
 	    self.rmap, self.cmap, self.dmap, self.mtx = ge_blkmtx(filename, self.comm, parser, pattern, mix)
-            #self.dataset_sz = self.mtx.shape[0] * self.rounds
-            self.dataset_sz = self.rounds
-     
+            self.dataset_sz = self.mtx.shape[0] * self.rounds
+            #self.dataset_sz = self.rounds
+    
+    def set_steps(self, sz):
+        self.dataset_sz = sz
+ 
     def ge_suffix(self):
         suffix = ''
         if self.comm.Get_rank() == 0:
@@ -176,7 +179,6 @@ class paralg(parasrv):
 	    val = list(val)
 	# assign local para
 	self.cached_para[key] = val
-	print 'check write', val
         self.kvm[self.ring.get_node(key)].push(key, val)
 
     def paralg_batch_write(self, valfunc, keyfunc = (lambda prefix, suffix : lambda index_st : prefix + index_st + suffix)('', ''), sz = 2, pack_flag = False):
@@ -215,14 +217,13 @@ class paralg(parasrv):
             self.cached_para[key] = [self.cached_para[key][t] + delta[t] for t in xrange(len(delta))]	
 	else:
 	    self.cached_para[key] += delta
-	print 'check inc', delta
 	# send update op to parameter server
         self.kvm[self.ring.get_node(key)].update(key, delta)
 
     # p = np.random.rand(5, 2)
     # print (lambda x : list(p[x,:]))(1)
     def paralg_batch_inc(self, deltafunc, keyfunc = (lambda prefix, suffix : lambda index_st : prefix + index_st + suffix)('', ''), sz = 2):
-        if isinstance(deltafunc(0), np.darray) or isinstance(deltafunc(0), list):
+        if isinstance(deltafunc(0), np.ndarray) or isinstance(deltafunc(0), list):
             for index in xrange(sz):
                 key = keyfunc(str(index))
                 server_index = self.ring.get_node(key)

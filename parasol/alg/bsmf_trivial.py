@@ -155,6 +155,7 @@ class bsmf(paralg):
         #self.rmap, self.cmap, self.mtx = ge_blkmtx(self.filename, self.comm)
 	paralg.loadinput(self, self.filename, parser_ussrt, 'fsmap')
         self.comm.barrier()
+	paralg.set_steps(self, self.rounds)
         self.__matrix_factorization()
         self.comm.barrier()
     
