@@ -37,9 +37,9 @@ class bsmf(paralg):
         pl_sz = self.p.shape[0]
         ql_sz = self.q.shape[1]
         data_container = zip(self.mtx.row, self.mtx.col, self.mtx.data)
-        print 'debug1', len(self.mtx.row), len(self.mtx.col), len(self.mtx.data), self.comm.Get_rank()
-        print 'debug2', pl_sz, ql_sz, self.comm.Get_rank()
         print 'data size is', len(data_container)
+        delta_p = np.random.rand(pl_sz, self.k)
+        delta_q = np.random.rand(self.k, ql_sz)
         for it in xrange(self.rounds):
             print 'round', it, self.comm.Get_rank()
             if it != 0:
@@ -55,13 +55,19 @@ class bsmf(paralg):
 		    #srv = self.ring.get_node(key)
 		    self.q[:,index] = paralg.paralg_read(self, key)
             print 'after round pull'
-	    old_p = copy.deepcopy(self.p)
-            old_q = copy.deepcopy(self.q)
+	    #old_p = copy.deepcopy(self.p)
+            #old_q = copy.deepcopy(self.q)
             #for i, j, v in data_container:
             #    for ki in xrange(self.k):
             #        old_p[i][ki] = self.p[i][ki]
             #        old_q[ki][j] = self.q[ki][j]
-	     
+	    for i in xrange(delta_p.shape[0]):
+	        for j in xrange(delta_p.shape[1]):
+                    delta_p[i][j] = 0.
+            for i in xrange(delta_q.shape[0]):
+                for j in xrange(delta_q.shape[1]):
+                    delta_q[i][j] = 0.
+
             start = clock()
             random.shuffle(data_container)
             end = clock()
@@ -70,8 +76,12 @@ class bsmf(paralg):
             for i, j, v in data_container:
                 eij = v - np.dot(self.p[i, :], self.q[:, j])
                 for ki in xrange(self.k):
-                    self.p[i][ki] += self.alpha * (2 * eij * self.q[ki][j] - self.beta * self.p[i][ki])
-                    self.q[ki][j] += self.alpha * (2 * eij * self.p[i][ki] - self.beta * self.q[ki][j])
+                    delta_p[i][ki] = self.alpha * (2 * eij * self.q[ki][j] - self.beta * self.p[i][ki])
+                    delta_q[ki][j] = self.alpha * (2 * eij * self.p[i][ki] - self.beta * self.q[ki][j])
+		    self.p[i][ki] += delta_p[i][ki]
+                    self.q[ki][j] += delta_q[ki][j]
+                    #self.p[i][ki] += self.alpha * (2 * eij * self.q[ki][j] - self.beta * self.p[i][ki])
+                    #self.q[ki][j] += self.alpha * (2 * eij * self.p[i][ki] - self.beta * self.q[ki][j])
             start = clock()
             print 'local calc time is', start - end
             
@@ -79,17 +89,19 @@ class bsmf(paralg):
 	    for index in xrange(pl_sz):
 		key = 'p[' + str(index) + ',:]_' + str(self.rank / self.b)
                 srv = self.ring.get_node(key)
-		deltap = list(self.p[index, :] - old_p[index, :])
+		#deltap = list(self.p[index, :] - old_p[index, :])
                 #deltap = list(self.p[index, :] - pp[index, :])
                 #deltap = list(self.p[index, :] - self.kvm[srv].pull(key))
-                paralg.paralg_inc(self, key, deltap)
+                #paralg.paralg_inc(self, key, deltap)
+		paralg.paralg_inc(self, key, delta_p[index, :])
 	    for index in xrange(ql_sz):
 		key = 'q[:,' + str(index) + ']_' + str(self.rank % self.b)
                 srv = self.ring.get_node(key)
-		deltaq = list(self.q[:, index] - old_q[:, index])
+		#deltaq = list(self.q[:, index] - old_q[:, index])
                 #deltaq = list(self.q[:,index] - qq[:, index])
                 #deltaq = list(self.q[:,index] - self.kvm[srv].pull(key))
-                paralg.paralg_inc(self, key, deltaq)
+                #paralg.paralg_inc(self, key, deltaq)
+		paralg.paralg_inc(self, key, delta_q[:, index])
             end = clock()
             print 'communication time is', end - start
 	    paralg.iter_done(self)

@@ -109,7 +109,7 @@ if __name__ == '__main__':
   if rank == 1:
     slotslst2 = [('d', 'c', 1), ('c', 'b', 1), ('c', 'd', 1)]
   rm2, cm2, slotslst2, dm2 = ind_mapping(slotslst2, comm)
-  if rank == 0:
+  if rank == 1:
     print rm2
     print cm2
     print dm2
