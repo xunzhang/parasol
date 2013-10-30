@@ -81,10 +81,10 @@ def ge_blkmtx(fl, comm, parser, pattern = 'linesplit', mix = False):
     comm.barrier()
 
     # mapping inds to ids and get rmap, cmap, new slotslst((rid, cid, val)s)
-    rmap, cmap, slotslst, dmap = ind_mapping(slotslst, comm, pattern)
+    rmap, cmap, slotslst, dmap, col_dmap = ind_mapping(slotslst, comm, pattern)
     print 'finish ind_mapping'
     
     # generate block matrix
     mtx = coo_matrix((np.array([i[2] for i in slotslst]), (np.array([i[0] for i in slotslst]), np.array([i[1] for i in slotslst]))))
   
-    return rmap, cmap, dmap, mtx
+    return rmap, cmap, dmap, col_dmap, mtx

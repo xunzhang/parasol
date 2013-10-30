@@ -51,6 +51,23 @@ def decomp2D(mtx, dim1, dim2, a, b, rank):
     return mtx[strow : dim1, stcol : stcol + py]
   # normal block
   return mtx[strow : strow + px, stcol : stcol + py]
+
+def sendrecv(sbuf, sto, stag, rfrom, rtag, comm):
+  req = comm.isend(sbuf, dest = sto, tag = stag)
+  rbuf = comm.recv(source = rfrom, tag = rtag)
+  req.wait()
+  return rbuf
+
+def bcastring(sendbuf, func, comm):
+  rk = comm.Get_rank()
+  sz = comm.Get_size()
+  func(sendbuf)
+  if sz == 1:  return
+  for i in xrange(1, sz):
+    f = (rk + i) % sz
+    t = (rk + sz - i) % sz
+    rbuf = sendrecv(sendbuf, t, 2013, f, 2013, comm)
+    func(rbuf) 
  
 if __name__ == '__main__':
   import numpy as np

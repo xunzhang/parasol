@@ -73,7 +73,7 @@ class paralg(parasrv):
 	    self.linelst = ge_blkmtx(filename, self.comm, parser, pattern, mix)
 	    self.dataset_sz = len(self.linelst) * self.rounds
         else:
-	    self.rmap, self.cmap, self.dmap, self.mtx = ge_blkmtx(filename, self.comm, parser, pattern, mix)
+	    self.rmap, self.cmap, self.dmap, self.col_dmap, self.mtx = ge_blkmtx(filename, self.comm, parser, pattern, mix)
             self.dataset_sz = self.mtx.shape[0] * self.rounds
             #self.dataset_sz = self.rounds
     
