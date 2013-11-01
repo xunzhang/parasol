@@ -42,7 +42,7 @@ class parasrv(Exception):
 
 class paralg(parasrv):
      
-    def __init__(self, comm, hosts_dict_lst, nworker, rounds = 1, limit_s = 3):
+    def __init__(self, comm, hosts_dict_lst, nworker, rounds = 1, limit_s = 1):
         self.nworker = nworker
         parasrv.__init__(self, comm, hosts_dict_lst)
         #self.para_cfg = json.loads(open(para_cfg_file).read())
@@ -55,6 +55,7 @@ class paralg(parasrv):
 	self.cached_para = {}
         self.clockserver = 0
 	self.dataset_sz = 0
+	self.linelst = []
 	if self.comm.Get_rank() == 0:
 	    #self.paralg_write('clt_sz', self.nworker)
             self.kvm[self.clockserver].push('clt_sz', self.nworker)
@@ -77,6 +78,9 @@ class paralg(parasrv):
             self.dataset_sz = self.mtx.shape[0] * self.rounds
             #self.dataset_sz = self.rounds
     
+    def getlines(self):
+        return self.linelst
+
     def set_steps(self, sz):
         self.dataset_sz = sz
  

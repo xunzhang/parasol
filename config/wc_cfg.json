@@ -1,0 +1,7 @@
+{
+"nserver" : 1,
+"nworker" : 4,
+"k" : 20,
+"input" : "/",
+"output" : "/"
+}
