@@ -104,7 +104,7 @@ class paralg(parasrv):
      
     def paralg_read(self, key):
 	#return self.kvm[self.ring.get_node(key)].pull(key)
-        if self.clock == 0:
+        if self.clock == 0 or self.clock == self.dataset_sz:
 	    self.cached_para[key] = self.kvm[self.ring.get_node(key)].pull(key)
             return self.cached_para[key]
             #return self.kvm[self.ring.get_node(key)].pull(key)
@@ -125,7 +125,7 @@ class paralg(parasrv):
             return self.kvm[self.ring.get_node(key)].pull(key)
     
     def paralg_batch_read(self, valfunc, keyfunc = (lambda prefix, suffix : lambda index_st : prefix + index_st + suffix)('', ''), stripfunc = '', sz = 2, pack_flag = False):
-	if self.clock == 0:
+	if self.clock == 0 or self.clock == self.dataset_sz:
 	    for index in xrange(sz):
                 key = keyfunc(str(index))
 	        self.cached_para[key] = self.kvm[self.ring.get_node(key)].pull(key)
