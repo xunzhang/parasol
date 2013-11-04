@@ -71,6 +71,9 @@ class pykv(Exception):
     def finalize(self):
         self.pdict.clear()
 
+    def getall(self):
+        return self.pdict
+
 if __name__ == '__main__':
     kvdict = pykv()
 

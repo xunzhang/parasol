@@ -49,8 +49,13 @@ class cproxy(Exception):
         return self.glue('remove', key)
         
     def clear(self):
-        return self.glue('clear')        
+        return self.glue('clear') 
 
+    def pullall(self):
+        return self.glue('pullall')
+
+    #def pull1by1(self):
+    #    return self.glue('pull1by1')
 
 if __name__ == '__main__':
     import numpy as np

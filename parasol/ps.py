@@ -37,8 +37,8 @@ class parasrv(Exception):
         self.servers = [i for i in xrange(self.srv_sz)]
         self.ring = HashRing(self.servers)
         
-    def ge_kvm(self, dict_lst):
-        self.kvm = [kv(srv['node'], srv['port']) for srv in dict_lst]
+    def ge_kvm(self):
+        self.kvm = [kv(srv['node'], srv['port']) for srv in self.dict_lst]
 
 class paralg(parasrv):
      
@@ -56,6 +56,7 @@ class paralg(parasrv):
         self.clockserver = 0
 	self.dataset_sz = 0
 	self.linelst = []
+	self.all_kvs = {}
 	if self.comm.Get_rank() == 0:
 	    #self.paralg_write('clt_sz', self.nworker)
             self.kvm[self.clockserver].push('clt_sz', self.nworker)
@@ -258,7 +259,47 @@ class paralg(parasrv):
                 delta_row = newvalfunc(index) - self.kvm[server_index].pull(key)
 	        self.cached_para[key] += delta_row
                 self.kvm[server_index].update(key, delta_row)
-    
+   
+    def paralg_read_all(self, filter_dict_func = lambda x : x):
+        table = {}
+        for srvid in xrange(self.srv_sz):
+	    table.update(filter_dict_func(self.kvm[srvid].pullall()))
+	return table
+   
+    def paralg_read_topk(self, k, filter_dict_func = lambda x : x):
+        table = self.paralg_read_all(filter_dict_func)
+	return sorted(table.items(), key = lambda kv : kv[-1], reverse = True)[0:k]
+
+    def paralg_read_btmk(self, k, filter_dict_func = lambda x : x):
+        table = self.paralg_read_all(filter_dict_func)
+	return sorted(table.items(), key = lambda kv : kv[-1])[0:k]
+
+    def read_topk_limitmem(self, k, filter_pair_func = lambda x : x if x or x == 0 else None):
+        from parasol.utils.heap import minhp
+        topktable = {}
+	topkheap = minhp(k)
+	for srvid in xrange(self.srv_sz):
+	    kvpair = filter_pair_func(self.kvm[srvid].pull1by1())
+	    if kvpair:
+	        topkheap.heappush(kvpair)
+	for cnt in xrange(k):
+            kvpair = topkheap.heappop()
+	    topktable[kvpair[0]] = kvpair[1]
+        return topktable
+
+    def read_btmk_limitmem(self, k, filter_pair_func = lambda x : x if x or x == 0 else None):
+        from parasol.utils.heap import maxhp
+	btmktable = {}
+	btmkheap = maxhp(k)
+	for srvid in xrange(self.srv_sz):
+	    kvpair = filter_pair_func(self.kvm[srvid].pull1by1())
+	    if kvpair:
+	        btmheap.heappush(kvpair)
+	for cnt in xrange(k):
+	    kvpair = btmkheap.heappop()
+	    btmktable[kvpair[0]] = kvpair[1]
+	return btmtable
+
     def solve(self):
         pass    
     

@@ -32,10 +32,10 @@ if __name__ == '__main__':
     if ret != 'done':
         print 'error in geting hostnames'
         sys.exit(1)
-
     sock.bind('tcp://*:' + str(port))
     sp = sproxy(0)
     while True:
+        v = None
         message = sock.recv() 
         l = message.split('parasol')
         #oplst = [cPickle.loads(ii) for ii in l]
@@ -61,6 +61,13 @@ if __name__ == '__main__':
             v = sp.pull_multi(oplst[1])
         if op == 'push_multi':
             v = sp.push_multi(oplst[1])
+	if op == 'pullall':
+	    v = sp.pull_all()
+	if op = 'pull1by1':
+	    dct = sp.pull_all()
+	    for kv in dct.items():
+		sock.send(mp.packb(kv))
+	    sock.send('parasoldone')
         if v or v == 0:
             #content = cPickle.dumps(v)     
             content = mp.packb(v)

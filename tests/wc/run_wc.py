@@ -23,4 +23,5 @@ if __name__ == '__main__':
     
     wc_solver = wc(comm, hosts_dict_lst, nworker, k, input_filename, output)
     wc_solver.solve()
-    wc_solver.write_wc_result()
+    #wc_solver.write_wc_result()
+    wc_solver.print_result()

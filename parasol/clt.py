@@ -19,6 +19,8 @@ class kv(Exception):
         self.pullsflag = False
         self.removeflag =False
         self.clearflag = False
+	self.pullallflag = False
+	self.pull1by1flag = False
          
     def push(self, key, val):
         if not self.pushflag:
@@ -74,6 +76,17 @@ class kv(Exception):
             self.clearflag = True
         self.clearconn.clear()
         
+    def pullall(self):
+        if not self.pullallflag:
+	    self.pullallconn = cservice(self.host, self.port)
+	    self.pullallflag = True
+	return self.pullall()
+
+    #def pull1by1(self):
+    #    if not self.pull1by1flag:
+    #	    self.pull1by1conn = cservice(self.host, self.port)
+    #	    self.pull1by1flag = True
+    #	return self.pull1by1conn.pull1by1()
 
 class cservice(Exception):
 
@@ -113,22 +126,35 @@ class cservice(Exception):
         return ret
 
     def pushs(self, key):
-        self.sock.sendall(self.cp.pushs(key))
+        self.sock.send(self.cp.pushs(key))
         #res = cPickle.loads(self.sock.recv(4096))
         res = mp.unpackb(self.sock.recv())
         return res
 
     def pulls(self, key, val, uniq):
-        self.sock.sendall(self.cp.pulls(key, val, uniq))
+        self.sock.send(self.cp.pulls(key, val, uniq))
         #res = cPickle.loads(self.sock.recv(4096))
         res = mp.unpackb(self.sock.recv())
         return res
     
     def remove(self, key):
-        self.sock.sendall(self.cp.remove(key))
+        self.sock.send(self.cp.remove(key))
         
     def clear(self):
-        self.sock.sendall(self.cp.clear())
+        self.sock.send(self.cp.clear())
+
+    def pullall(self):
+        self.sock.send(self.cp.pullall())
+	table = mp.unpackb(self.sock.recv())
+	return table
+    
+    #def pull1by1(self):
+    #    self.sock.send(self.cp.pull1by1())
+    #	while True:
+    #	    val = mp.unpackb(self.sock.recv())
+    #	    if val == 'parasoldone':
+    #	        break 
+    #	return kvpair
  
 if __name__ == '__main__':
     # alg code demo
