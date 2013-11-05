@@ -80,7 +80,7 @@ class kv(Exception):
         if not self.pullallflag:
 	    self.pullallconn = cservice(self.host, self.port)
 	    self.pullallflag = True
-	return self.pullall()
+	return self.pullallconn.pullall()
 
     #def pull1by1(self):
     #    if not self.pull1by1flag:

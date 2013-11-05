@@ -57,13 +57,15 @@ if __name__ == '__main__':
                 v = sp.inc(oplst[1], oplst[2])
         if op == 'pull':
             v = sp.pull(oplst[1])
+	    if not v:
+	        v = 'nokey'
         if op == 'pull_multi':
             v = sp.pull_multi(oplst[1])
         if op == 'push_multi':
             v = sp.push_multi(oplst[1])
 	if op == 'pullall':
 	    v = sp.pull_all()
-	if op = 'pull1by1':
+	if op == 'pull1by1':
 	    dct = sp.pull_all()
 	    for kv in dct.items():
 		sock.send(mp.packb(kv))

@@ -33,7 +33,7 @@ class parasrv(Exception):
             #    self.dict_lst.append(tmp)
         self.dict_lst = comm.bcast(hosts_dict_lst, root = 0)
         # generate kvm
-        self.ge_kvm(hosts_dict_lst)
+        self.ge_kvm()
         self.servers = [i for i in xrange(self.srv_sz)]
         self.ring = HashRing(self.servers)
         
@@ -102,7 +102,14 @@ class paralg(parasrv):
         self.clock += 1
 	if self.clock == self.dataset_sz:
             self.kvm[self.clockserver].update('clt_sz', -1)
-     
+    
+    def paralg_contains(self, key):
+        val = self.kvm[self.ring.get_node(key)].pull(key)
+        if val == 'nokey':
+	    return False
+	self.cached_para[key] = val
+	return True
+
     def paralg_read(self, key):
 	#return self.kvm[self.ring.get_node(key)].pull(key)
         if self.clock == 0 or self.clock == self.dataset_sz:
@@ -264,14 +271,20 @@ class paralg(parasrv):
         table = {}
         for srvid in xrange(self.srv_sz):
 	    table.update(filter_dict_func(self.kvm[srvid].pullall()))
+	if table.get('serverclock'):
+	    del table['serverclock']
 	return table
    
     def paralg_read_topk(self, k, filter_dict_func = lambda x : x):
         table = self.paralg_read_all(filter_dict_func)
+	if table.get('serverclock'):
+	    del table['serverclock']
 	return sorted(table.items(), key = lambda kv : kv[-1], reverse = True)[0:k]
 
     def paralg_read_btmk(self, k, filter_dict_func = lambda x : x):
         table = self.paralg_read_all(filter_dict_func)
+	if table.get('serverclock'):
+	    del table['serverclock']
 	return sorted(table.items(), key = lambda kv : kv[-1])[0:k]
 
     def read_topk_limitmem(self, k, filter_pair_func = lambda x : x if x or x == 0 else None):

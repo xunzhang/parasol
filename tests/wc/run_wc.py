@@ -4,12 +4,12 @@ if __name__ == '__main__':
     import json
     from mpi4py import MPI
     from optparse import OptionParser
-    from paralg.alg.wc import wc
+    from parasol.alg.wc import wc
     from parasol.utils.gethostnames import get_hostnames_dict
     comm = MPI.COMM_WORLD
     
     optpar = OptionParser()
-    optpar.add_option('--hostname', action = 'store', type = 'string', dest = 'hosts_name_st', help = 'hosts name string of paralg servers', metavar = 'dwalin:8888parasolbalin:7777')
+    optpar.add_option('--hostsname', action = 'store', type = 'string', dest = 'hosts_name_st', help = 'hosts name string of paralg servers', metavar = 'dwalin:8888parasolbalin:7777')
     options, args = optpar.parse_args()
     hosts_dict_lst = get_hostnames_dict(options.hosts_name_st)
 

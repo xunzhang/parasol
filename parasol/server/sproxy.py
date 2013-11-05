@@ -70,7 +70,7 @@ class sproxy(Exception):
         kvpoll_lst[self.fd].finalize() 
 
     def pull_all(self):
-        kvpoll_lst[self.fd].getall()
+        return kvpoll_lst[self.fd].getall()
     
     def parser(self, st):
         l = st.split('parasol')

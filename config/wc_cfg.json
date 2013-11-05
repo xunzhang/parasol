@@ -1,7 +1,7 @@
 {
-"nserver" : 1,
-"nworker" : 4,
-"k" : 20,
-"input" : "/",
-"output" : "/"
+"nserver" : 4,
+"nworker" : 8,
+"k" : 7,
+"input" : "/home/xunzhang/xunzhang/Proj/piccolo/src/util/rpc.cc",
+"output" : "/home/xunzhang/xunzhang/tmp/tuesday/"
 }
