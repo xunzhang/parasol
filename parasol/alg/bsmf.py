@@ -26,7 +26,10 @@ class bsmf(paralg):
         self.alpha = alpha
         self.beta = beta
         self.rounds = rounds
-        
+
+	self.update_wgtp = 1. / self.a
+        self.update_wgtq = 1. / self.b
+
         # create folder
         paralg.crt_outfolder(self, self.outp)
         paralg.crt_outfolder(self, self.outq)
@@ -164,8 +167,8 @@ class bsmf(paralg):
     def __new_group_op_2(self, sz1, sz2):
         #paralg.paralg_batch_inc_nodelta(self, (lambda i : self.p[i, :]), (lambda index_st : 'p[' + index_st + ',:]_' + str(self.rank / self.b)), sz1)
         #paralg.paralg_batch_inc_nodelta(self, (lambda j : self.q[:, j]), (lambda index_st : 'q[:,' + index_st + ']_' + str(self.rank % self.b)), sz2)
-        paralg.paralg_batch_inc(self, (lambda i : self.delta_p[i, :]), (lambda index_st : 'p[' + index_st + ',:]_' + str(self.rank / self.b)), sz1)
-        paralg.paralg_batch_inc(self, (lambda j : self.delta_q[:, j]), (lambda index_st : 'q[:,' + index_st + ']_' + str(self.rank % self.b)), sz2)
+        paralg.paralg_batch_inc(self, (lambda i : self.update_wgtp * self.delta_p[i, :]), (lambda index_st : 'p[' + index_st + ',:]_' + str(self.rank / self.b)), sz1)
+        paralg.paralg_batch_inc(self, (lambda j : self.update_wgtq * self.delta_q[:, j]), (lambda index_st : 'q[:,' + index_st + ']_' + str(self.rank % self.b)), sz2)
         
     def __mf_kernel(self):#, alpha = 0.0002, beta = 0.02, rounds = 5):
         pl_sz = self.p.shape[0]
