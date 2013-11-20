@@ -66,7 +66,7 @@ class sgd(paralg):
        return np.array(a), np.array(b)
 
     def solve(self):
-	from sklearn import datasets
+	#from sklearn import datasets
 	import matplotlib.pyplot as plt
     	from parasol.utils.lineparser import parser_b
 	paralg.loadinput(self, self.filename)
