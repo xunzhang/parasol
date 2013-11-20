@@ -132,7 +132,7 @@ class paralg(parasrv):
                 #print self.rank, ' get ', self.stale_cache
             return self.kvm[self.ring.get_node(key)].pull(key)
     
-    def paralg_batch_read(self, valfunc, keyfunc = (lambda prefix, suffix : lambda index_st : prefix + index_st + suffix)('', ''), stripfunc = '', sz = 2, pack_flag = False):
+    def paralg_batch_read(self, valfunc, keyfunc = (lambda prefix, suffix : lambda index_st : prefix + index_st + suffix)('', ''), stripfunc = '', sz = 2, pack_flag = True):
 	if self.clock == 0 or self.clock == self.dataset_sz:
 	    for index in xrange(sz):
                 key = keyfunc(str(index))
@@ -193,7 +193,7 @@ class paralg(parasrv):
 	self.cached_para[key] = val
         self.kvm[self.ring.get_node(key)].push(key, val)
 
-    def paralg_batch_write(self, valfunc, keyfunc = (lambda prefix, suffix : lambda index_st : prefix + index_st + suffix)('', ''), sz = 2, pack_flag = False):
+    def paralg_batch_write(self, valfunc, keyfunc = (lambda prefix, suffix : lambda index_st : prefix + index_st + suffix)('', ''), sz = 2, pack_flag = True):
         if pack_flag:
             self.__paralg_pack_batch_write(valfunc, keyfunc, sz)
         else:

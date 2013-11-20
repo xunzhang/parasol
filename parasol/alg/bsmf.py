@@ -242,10 +242,15 @@ class bsmf(paralg):
         # kernel mf solver
         self.__mf_kernel()
 
+    def parser_local(self,line):
+      tmp = line.strip('\n').split(',')
+      return [int(tmp[0]), int(tmp[1]), float(tmp[2])]
+
     def solve(self):
         from parasol.utils.lineparser import parser_ussrt
         #self.rmap, self.cmap, self.mtx = ge_blkmtx(self.filename, self.comm)
-	paralg.loadinput(self, self.filename, parser_ussrt, 'fsmap')
+	#paralg.loadinput(self, self.filename, parser_ussrt, 'fsmap')
+	paralg.loadinput(self, self.filename, self.parser_local, 'fsmap')
         self.comm.barrier()
 	paralg.set_steps(self, self.rounds)
         self.__matrix_factorization()
@@ -256,8 +261,8 @@ class bsmf(paralg):
         q = self.q.transpose()
         for i, j, v in zip(self.mtx.row, self.mtx.col, self.mtx.data):
             esum += (v - np.dot(self.p[i, :], q[:, j])) ** 2
-            for ki in xrange(self.k):
-                esum += (self.beta / 2) * (self.p[i][ki] ** 2 + q[ki][j] ** 2)
+            #for ki in xrange(self.k):
+            #    esum += (self.beta / 2) * (self.p[i][ki] ** 2 + q[ki][j] ** 2)
         return esum
     
     def calc_loss(self):

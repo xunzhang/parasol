@@ -123,12 +123,12 @@ if __name__ == '__main__':
   #  print dm
   #  print slotslst
 
-  slotslst2 = []
-  if rank == 0:
-    slotslst2 = [('b', 'a', 1), ('a', 'b', 1), ('a', 'c', 2), ('a', 'd', 1), ('b', 'd', 1)]
-  if rank == 1:
-    slotslst2 = [('d', 'c', 1), ('c', 'b', 1), ('c', 'd', 5)]
-  rm2, cm2, slotslst2, dm2, c_dm2 = ind_mapping(slotslst2, comm)
+  #slotslst2 = []
+  #if rank == 0:
+  #  slotslst2 = [('b', 'a', 1), ('a', 'b', 1), ('a', 'c', 2), ('a', 'd', 1), ('b', 'd', 1)]
+  #if rank == 1:
+  #  slotslst2 = [('d', 'c', 1), ('c', 'b', 1), ('c', 'd', 5)]
+  #rm2, cm2, slotslst2, dm2, c_dm2 = ind_mapping(slotslst2, comm)
   if rank == 0:
     print 'rm', rm2
     print 'dm', dm2

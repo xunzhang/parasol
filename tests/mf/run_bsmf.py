@@ -4,8 +4,8 @@ if __name__ == '__main__':
     import json
     from mpi4py import MPI
     from optparse import OptionParser
-    #from parasol.alg.bsmf import bsmf
-    from parasol.alg.bsmf_trivial import bsmf
+    from parasol.alg.bsmf import bsmf
+    #from parasol.alg.bsmf_trivial import bsmf
     from parasol.utils.gethostnames import get_hostnames_dict
     comm = MPI.COMM_WORLD
    
