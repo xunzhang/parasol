@@ -7,5 +7,5 @@ setup(name = 'parasol',
     description = 'Parameter Server for ML algs',
     author = 'Hong Wu, Changsheng Jiang',
     author_email = 'wuhong@douban.com, xunzhangthu@gmail.com',
-    packages = ['parasol', 'parasol.server', 'parasol.loader', 'parasol.utils', 'parasol.writer', 'parasol.alg'],
+    packages = ['parasol', 'parasol.server', 'parasol.utils', 'parasol.writer', 'parasol.alg'],
 )

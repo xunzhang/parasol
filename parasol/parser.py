@@ -1,5 +1,3 @@
-#! /usr/bin/python
-
 # example: 1001 1 2 4 - parser_b(' ')
 parser_a = lambda sep : lambda line : [int(l) for l in line.strip('\n').split(sep)]
 

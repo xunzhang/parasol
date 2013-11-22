@@ -1,4 +1,7 @@
+#! /usr/bin/python
+
 import os
+from mpi4py import MPI
 
 def expand_dir_rec(dn):
     import glob
@@ -21,8 +24,10 @@ def expand(fns):
         for it in fns:
             if os.path.isfile(it):
                 flst.append(it)
-            else:
+            elif os.path.isdir(it):
                 flst += expand_dir_rec(it)
+	    else:
+	        flst += glob.glob(it)
         return flst
     elif os.path.isfile(fns):
         return [fns]
@@ -30,3 +35,20 @@ def expand(fns):
         return expand_dir_rec(fns)
     else:
         return glob.glob(fns)
+
+def sendrecv(sbuf, sto, stag, rfrom, rtag, comm):
+    req = comm.isend(sbuf, dest = sto, tag = stag)
+    rbuf = comm.recv(source = rfrom, tag = rtag)
+    req.wait()
+    return rbuf
+
+def bcastring(sendbuf, func, comm):
+    rk = comm.Get_rank()
+    sz = comm.Get_size()
+    func(sendbuf)
+    if sz == 1: return
+    for i in xrange(1, sz):
+        f = (rk + i) % sz
+	t = (rk + sz - i) % sz
+	rbuf = sendrecv(sendbuf, t, 2013, f, 2013, comm)
+	func(rbuf) 

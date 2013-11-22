@@ -18,7 +18,6 @@ if __name__ == '__main__':
     json_obj = json.loads(open(cfg_file).read())
     nsrv = json_obj['nserver']
     nworker = json_obj['nworker']
-    k = json_obj['k']
     input_filename = json_obj['input']
     output = json_obj['output']
 
@@ -26,7 +25,7 @@ if __name__ == '__main__':
     beta = json_obj['beta']
     rounds = json_obj['rounds'] 
     
-    sgd_solver = sgd(comm, hosts_dict_lst, nworker, k, input_filename, output, alpha, beta, rounds)
+    sgd_solver = sgd(comm, hosts_dict_lst, nworker, input_filename, output, alpha, beta, rounds)
 
     sgd_solver.solve()
     #print sgd_solver.theta

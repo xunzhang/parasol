@@ -1,10 +1,3 @@
-#! /usr/bin/python
-#
-# wuhong<wuhong@douban.com>
-#
-# python demo version of key-value store in memory
-#
-
 import threading
 
 op_mutex = threading.Lock()
@@ -18,7 +11,6 @@ class pykv(Exception):
         #op_mutex.acquire()
         self.pdict[key] = val
         #op_mutex.release()
-        return True
    
     def set_multi(self, kvdict):
         for key in kvdict.keys():

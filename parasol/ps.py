@@ -15,22 +15,6 @@ class parasrv(Exception):
 
     def __init__(self, comm, hosts_dict_lst):
         self.srv_sz = len(hosts_dict_lst)
-        #srv_lst = []
-        #self.dict_lst = []
-        #if comm.Get_rank() == 0:
-            #context = zmq.Context()
-            #sock = context.socket(zmq.REP)
-            #sock.bind("tcp://*:7777")
-            #for i in xrange(self.srv_sz):
-            #    msg = sock.recv()
-            #    tmp = msg.split('parasol')
-            #    srv_lst.append((tmp[0], tmp[1]))
-            #    sock.send('done')
-            #for i in xrange(self.srv_sz):
-            #    tmp = {}
-            #    tmp["node"] = srv_lst[i][0]
-            #    tmp["port"] = srv_lst[i][1]
-            #    self.dict_lst.append(tmp)
         self.dict_lst = comm.bcast(hosts_dict_lst, root = 0)
         # generate kvm
         self.ge_kvm(hosts_dict_lst)
@@ -38,24 +22,22 @@ class parasrv(Exception):
         self.ring = HashRing(self.servers)
         
     def ge_kvm(self, dict_lst):
-        self.kvm = [kv(srv['node'], srv['port']) for srv in dict_lst]
+        self.kvm = [kv(srv['node'], srv['ports']) for srv in dict_lst]
 
 class paralg(parasrv):
      
     def __init__(self, comm, hosts_dict_lst):
         parasrv.__init__(self, comm, hosts_dict_lst)
-        #self.para_cfg = json.loads(open(para_cfg_file).read())
-        #self.srv_sz = self.para_cfg['nserver']
         self.comm = comm
         self.ge_suffix()
         self.comm.barrier() 
     
     def loadinput(self, filename, parser = (lambda l : l), pattern = 'linesplit', mix = False):
-        from parasol.loader.crtblkmtx import ge_blkmtx
-    	if pattern == 'linesplit':
-	    self.linelst = ge_blkmtx(filename, self.comm, parser, pattern, mix)
-        else:
-	    self.rmap, self.cmap, self.dmap, self.mtx = ge_blkmtx(filename, self.comm, parser, pattern, mix)
+        from parasol.loader import loader 
+	ld = loader(filename, self.comm, pattern, mix)
+	self.linelst = ld.load()
+    	if pattern != 'linesplit':
+	    self.mtx, self.rmap, self.cmap, self.dmap, self.col_dmap = ld.create_matrix(self.linelst)
      
     def ge_suffix(self):
         suffix = ''

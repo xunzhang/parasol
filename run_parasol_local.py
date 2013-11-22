@@ -2,9 +2,11 @@
 # ./run_parasol_local.py -p 1 -w 8 python ./tests/mf/run_bsmf.py
 # ./run_parasol_local.py --config ./config/bsmf_cfg.json python ./tests/mf/run_bsmf.py
 
+import os
 import sys
 import json
 import socket
+import signal
 import subprocess
 from optparse import OptionParser
 from parasol.utils.gethostnames import get_hostnames_st
@@ -35,8 +37,7 @@ if __name__ == '__main__':
 
     start_parasrv_cmd = 'mpirun -n ' + str(nsrv) + ' python ./parasol/server/start_srv.py --hostname ' + socket.gethostname() 
     print start_parasrv_cmd
-    subprocess.Popen(start_parasrv_cmd, shell = True)
-
+    procs = subprocess.Popen(start_parasrv_cmd, shell = True, preexec_fn = os.setpgrp)
     hosts_dict_st = get_hostnames_st(nsrv)
     
     entry_cmd = ''
@@ -44,6 +45,8 @@ if __name__ == '__main__':
         entry_cmd = ' '.join(args)
     start_alg_cmd = 'mpirun -n ' + str(nworker) + ' ' + entry_cmd + ' --hostsname ' + hosts_dict_st
     print start_alg_cmd
-    subprocess.call(start_alg_cmd, shell = True)
-    #subprocess.Popen(start_alg_cmd, shell = True)
-
+    os.system(start_alg_cmd)
+    #procs.kill()
+    #os.kill(procs.pid, 9)
+    #procs.terminate()
+    os.killpg(procs.pid, 9)

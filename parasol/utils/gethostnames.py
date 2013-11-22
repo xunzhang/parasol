@@ -12,7 +12,7 @@ def get_hostnames_st(srv_sz):
         #srv_lst.append((tmp[0], tmp[1]))
 	st += tmp[0] + ':' + tmp[1]
 	if i != srv_sz - 1:
-		st += 'parasol'
+	    st += 'parasol'
         sock.send('done')
     return st 
 
@@ -23,6 +23,6 @@ def get_hostnames_dict(names):
     	l = item.split(':')
         tmp = {}
         tmp['node'] = l[0]
-        tmp['port'] = l[1]
+        tmp['ports'] = l[1]
         dict_lst.append(tmp)
     return dict_lst

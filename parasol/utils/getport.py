@@ -25,3 +25,9 @@ def getport():
     while not is_availiable(port):
         port = random.randint(5000, 65535)
     return port
+
+def getports():
+    portlst = []
+    for i in xrange(4):
+        portlst.append(getport())
+    return portlst
