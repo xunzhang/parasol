@@ -9,6 +9,7 @@ import msgpack as mp
 from optparse import OptionParser
 from pykv import pykv
 from config import kvpoll_lst
+from sproxy import sproxy
 from parasol.utils.getport import getport, getports
 
 def prepare(init_host):
@@ -29,28 +30,39 @@ def prepare(init_host):
     return portlst
     
 def thread_exec(sock):
+    sp = sproxy(0)
     global opmutex
     while 1:
         msg = sock.recv()
 	l = msg.split('parasol')
 	oplst = [mp.unpackb(ii) for ii in l]
-	opmutex.acquire()
 	ind = oplst[0]
 	v = ''
+	opmutex.acquire()
 	if ind == 'pull':
-	    v = kvpoll_lst[0].get(oplst[1])
+	    v = sp.pull(oplst[1])
 	if ind == 'pull_multi':
-	    v = kvpoll_lst[0].get_multi(oplst[1])
+	    v = sp.pull_multi(oplst[1])
+	if ind == 'pullall':
+	    v = sp.pull_all()
         if ind == 'push':
-	    kvpoll_lst[0].set(oplst[1], oplst[2])
+	    if oplst[1] == 'clt_sz':
+	        sp.clt_sz_push(oplst[2])
+	    else:
+	        sp.push(oplst[1], oplst[2])
 	if ind == 'push_multi':
-	    kvpoll_lst[0].set_multi(oplst[1])
-	if ind == 'update':
-	    kvpoll_lst[0].incr(oplst[1], oplst[2])
+	    sp.push_multi(oplst[1])
+	if ind == 'inc':
+	    if oplst[1] == 'clt_sz':
+	        sp.clt_sz_inc(oplst[2])
+	    elif oplst[1].startswith('clientclock'):
+	        sp.client_clock_inc(oplst[1])
+	    else:
+	        sp.inc(oplst[1], oplst[2])
 	if ind == 'remove':
-	    kvpoll_lst[0].delete(oplst[1])
+	    sp.remove(oplst[1])
 	if ind == 'clear':
-	    kvpoll_lst[0].finalize()
+	    sp.clear()
 	opmutex.release()
         if v or v == 0:
             content = mp.packb(v)
@@ -61,7 +73,7 @@ def multithrd_main(init_host):
 
     thrd_tasks = []
     context = zmq.Context()
-
+    
     sock = context.socket(zmq.REP)
     sock.bind('tcp://*:' + str(ports[0]))
     thrd_tasks.append(threading.Thread(target = thread_exec, args = (sock, )))

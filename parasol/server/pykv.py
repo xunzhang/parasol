@@ -1,25 +1,19 @@
-import threading
-
-op_mutex = threading.Lock()
-
 class pykv(Exception):
 
     def __init__(self):
         self.pdict = {}
+	self.pdict['clt_sz'] = 0
+	self.pdict['serverclock'] = 0
 
     def set(self, key, val):
-        #op_mutex.acquire()
         self.pdict[key] = val
-        #op_mutex.release()
    
     def set_multi(self, kvdict):
         for key in kvdict.keys():
             self.set(key, kvdict[key])
 
     def get(self, key):
-        #op_mutex.acquire()
         v = self.pdict.get(key)
-        #op_mutex.release()
         return v
     
     def get_multi(self, keylst):
@@ -61,6 +55,9 @@ class pykv(Exception):
 
     def finalize(self):
         self.pdict.clear()
+
+    def getall(self):
+        return self.pdict
 
 if __name__ == '__main__':
     kvdict = pykv()

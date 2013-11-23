@@ -11,6 +11,7 @@ def file_load_lines_impl(fn, st, en):
         l = f.readline()
         offset += len(l)
         yield l
+    f.close()
 
 def file_partition(fn, np):
     import os
@@ -65,6 +66,7 @@ def files_load_lines_impl(name_lst, displs, st, en):
                 l = f.readline()
                 if not l: break
                 yield l 
+        f.close()
   
 def files_partition(name_lst, np, pattern = '', blk_sz = 8):
     import os

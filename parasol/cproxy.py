@@ -28,7 +28,7 @@ class cproxy(Exception):
         return self.glue('pull_multi', keylst)
          
     def inc(self, key, delta):
-        return self.glue('update', key, delta)
+        return self.glue('inc', key, delta)
         
     def pushs(self, key):
         return self.glue('pushs', key)
@@ -41,3 +41,7 @@ class cproxy(Exception):
         
     def clear(self):
         return self.glue('clear')        
+
+    def pullall(self):
+        return self.glue('pullall')
+

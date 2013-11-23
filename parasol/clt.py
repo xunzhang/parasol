@@ -12,6 +12,7 @@ class kv(Exception):
 	self.ports = ports.split(',')
         self.pullflag = False 
         self.pull_multiflag = False
+	self.pullallflag = False
         self.pushflag = False
         self.push_multiflag = False
         self.updateflag = False
@@ -44,6 +45,13 @@ class kv(Exception):
 	self.pull_multisock.send(self.cp.pull_multi(keylst))
         return mp.unpackb(self.pull_multisock.recv())
     
+    def pullall(self):
+        if not self.pullallflag:
+	    self.pullallflag = True
+	    self.pullallsock = self._create_req_sock(self.ports[0])
+	self.pullallsock.send(self.cp.pullall())
+	return mp.unpackb(self.pullallsock.recv())
+
     def push(self, key, val):
         if not self.pushflag:
             self.pushflag = True

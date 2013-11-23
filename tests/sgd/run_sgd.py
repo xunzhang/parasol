@@ -13,7 +13,6 @@ if __name__ == '__main__':
     options, args = optpar.parse_args()
     hosts_dict_lst = get_hostnames_dict(options.hosts_name_st)
 
-    #cfg_file = '/mfs/user/wuhong/release/parasol/config/sgd_cfg.json'
     cfg_file = '/home/xunzhang/xunzhang/Proj/parasol/config/sgd_cfg.json'
     json_obj = json.loads(open(cfg_file).read())
     nsrv = json_obj['nserver']
@@ -21,11 +20,25 @@ if __name__ == '__main__':
     input_filename = json_obj['input']
     output = json_obj['output']
 
-    alpha = json_obj['alpha']
-    beta = json_obj['beta']
-    rounds = json_obj['rounds'] 
-    
-    sgd_solver = sgd(comm, hosts_dict_lst, nworker, input_filename, output, alpha, beta, rounds)
+    # optional para
+    if json_obj.get('alpha'):
+        alpha = json_obj['alpha']
+    else:
+        alpha = 0.001
+    if json_obj.get('beta'):
+        beta = json_obj['beta']
+    else:
+        beta = 0.01
+    if json_obj.get('rounds'):
+        rounds = json_obj['rounds']
+    else:
+        rounds = 10
+    if json_obj.get('limit_s'):
+        limit_s = json_obj['limit_s']
+    else:
+        limit_s = 3
+     
+    sgd_solver = sgd(comm, hosts_dict_lst, nworker, input_filename, output, alpha, beta, rounds, limit_s)
 
     sgd_solver.solve()
     #print sgd_solver.theta

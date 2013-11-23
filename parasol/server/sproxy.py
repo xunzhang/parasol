@@ -9,7 +9,28 @@ class sproxy(Exception):
     
     def __init__(self, fd):
         self.fd = fd
-        
+	#self.srv_clock = 0
+	self.clock_dict = {}
+	#self.push('serverclock', 0)
+	#self.clt_sz = 0
+    
+    def clt_sz_push(self, val):
+        #self.clt_sz = int(val)
+        kvpoll_lst[self.fd].set('clt_sz', int(val))
+	return True
+
+    def clt_sz_inc(self, delta_val):
+        #self.clt_sz += int(delta_val)
+        kvpoll_lst[self.fd].incr('clt_sz', int(delta_val))
+	print 'finally', kvpoll_lst[self.fd].get('clt_sz')
+	return True
+    
+    def debug(self):
+        print 'self sz is ', self.clt_sz
+  
+    def debug2(self):
+        print 'serverclocks is ', self.pull('serverclock')
+             
     def push(self, key, val):
         kvpoll_lst[self.fd].set(key, val)
     
@@ -21,6 +42,25 @@ class sproxy(Exception):
          
     def pull_multi(self, keylst):
         return kvpoll_lst[self.fd].get_multi(keylst)
+   
+    def client_clock_inc(self, key): 
+	#if self.clock_dict.get(key):
+        if kvpoll_lst[self.fd].get(key):
+	    #self.clock_dict[key] += 1
+	    kvpoll_lst[self.fd].incr(key, 1)
+	else:
+	    kvpoll_lst[self.fd].set(key, 1)
+	    #self.clock_dict[key] = 1
+	#if self.clock_dict['clientclock_' + str(self.srv_clock)] == self.clt_sz:
+	#if self.clock_dict[key] >= kvpoll_lst[self.fd].get('clt_sz'):
+	if kvpoll_lst[self.fd].get(key) >= kvpoll_lst[self.fd].get('clt_sz'):
+	    #if self.clock_dict[key] > self.clt_sz:
+            #    print 'debug', 'clt_sz', self.clt_sz
+	    #	print 'debug', 'differenb', self.clock_dict[key] - self.clt_sz
+	    self.inc('serverclock', 1)
+	    #self.clock_dict[key] = 0
+	    kvpoll_lst[self.fd].set(key, 0)
+        return True
     
     def inc(self, key, delta):
         return kvpoll_lst[self.fd].incr(key, delta)
@@ -36,6 +76,9 @@ class sproxy(Exception):
     
     def clear(self):
         kvpoll_lst[self.fd].finalize() 
+
+    def pull_all(self):
+        return kvpoll_lst[self.fd].getall()
     
     def parser(self, st):
         l = st.split('parasol')

@@ -1,9 +1,10 @@
 {
 "nserver" : 1,
-"nworker" : 1,
-"input" : "/home/xunzhang/xunzhang/Data/classification/000.csv",
+"nworker" : 2,
+"input" : "/home/xunzhang/xunzhang/Data/classification/train140",
 "output" : "/home/xunzhang/xunzhang/tmp/classification/",
 "alpha" : 0.01,
 "beta" : 0.001,
-"rounds" : 10
+"rounds" : 300,
+"limit_s" : 1
 }

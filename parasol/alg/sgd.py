@@ -7,8 +7,8 @@ from parasol.writer.writer import outputline
 
 class sgd(paralg):
   
-    def __init__(self, comm, hosts_dict_lst, nworker, input_filename, output, alpha = 0.002, beta = 0.1, rounds = 3):
-    	paralg.__init__(self, comm, hosts_dict_lst)
+    def __init__(self, comm, hosts_dict_lst, nworker, input_filename, output, alpha = 0.002, beta = 0.1, rounds = 3, limit_s = 1):
+    	paralg.__init__(self, comm, hosts_dict_lst, nworker, rounds, limit_s)
 	self.rank = self.comm.Get_rank()
 	#self.a, self.b = npfactx(nworker)
 	self.filename = input_filename
@@ -23,14 +23,14 @@ class sgd(paralg):
     def loss_func_gra(self, x, theta):
         from math import e
 	#np.seterr(over='raise')
-	tmp = np.dot(x, theta)
-	tmp2 = 1. / (1. + e ** tmp)
-	return e ** (tmp) * tmp2
+	term  = e ** (np.dot(x, theta))
+	return term / (1. + term)
  
     def __sgd_kernel(self, debug = False): #sample, label, rounds = 20):
 	import random
 	from array import array
 	from mpi4py import MPI
+	import time
 	if debug:
 	    err = array('f', [])
 	m, n = self.sample.shape
@@ -41,6 +41,7 @@ class sgd(paralg):
 	print 'rank: ', self.rank, ' | data size is: ', m
 	total_datasz = self.comm.allreduce(m, op = MPI.SUM)
 	min_datasz = self.comm.allreduce(m, op = MPI.MIN)
+	#print 'debug', paralg.paralg_read_all(self)
 	#self.theta = 0
 	for it in xrange(self.rounds):
 	    cnt = 0
@@ -49,6 +50,8 @@ class sgd(paralg):
 	    # traverse samples
             #self.theta = np.array(paralg.paralg_read(self, 'theta'))
 	    for i in z:
+	        #if self.comm.Get_rank() == 1:
+	        #    time.sleep(0.1)
 	        cnt += 1
 		# before calc, pull theta first
 		#if cnt == 0 or cnt % 100 == 0:
@@ -65,6 +68,7 @@ class sgd(paralg):
 		    local_err = sum([(self.label[i] - self.loss_func_gra(self.sample[i], self.theta)) ** 2 for i in range(m)])
 		    fz = self.comm.allreduce(local_err, op = MPI.SUM)
                     err.append(fz / total_datasz)
+		paralg.iter_done(self)
 	self.comm.barrier()
 	self.theta = np.array(paralg.paralg_read(self, 'theta'))
 	if debug:
@@ -90,8 +94,8 @@ class sgd(paralg):
         self.sample, self.label = self.parser_local(self.linelst)
 	self.comm.barrier()
         s = time.time()
-	debug_flag = True
-	#debug_flag = False
+	#debug_flag = True
+	debug_flag = False
         if debug_flag:
 	    err = self.__sgd_kernel(debug_flag)
 	    if self.rank == 0:
