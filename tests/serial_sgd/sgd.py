@@ -36,6 +36,6 @@ def log_reg_regularized_sgd(x, y, alpha, beta = 0.1, max_iter = 100, debug = Fal
         for i in z:
             theta = theta + alpha * (y[i] - h(x[i], theta)) * x[i] - beta * 2. * alpha * theta
             #if debug:err.append(sum([(y[i]-h(x[i],theta))**2 for i in range(m)]))
-        if debug: err.append(sum([(y[i] - h(x[i], theta)) ** 2 for i in range(m)]) / m)
+            if debug: err.append(sum([(y[i] - h(x[i], theta)) ** 2 for i in range(m)]) / m)
     if debug: return theta,err
     return theta

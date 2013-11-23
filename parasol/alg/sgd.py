@@ -22,12 +22,15 @@ class sgd(paralg):
 
     def loss_func_gra(self, x, theta):
         from math import e
-	term = e ** (np.dot(x, theta))
-	return term / (1. + term)
+	#np.seterr(over='raise')
+	tmp = np.dot(x, theta)
+	tmp2 = 1. / (1. + e ** tmp)
+	return e ** (tmp) * tmp2
  
     def __sgd_kernel(self, debug = False): #sample, label, rounds = 20):
 	import random
 	from array import array
+	from mpi4py import MPI
 	if debug:
 	    err = array('f', [])
 	m, n = self.sample.shape
@@ -35,9 +38,12 @@ class sgd(paralg):
 	self.theta = np.random.random(n)
 	paralg.paralg_write(self, 'theta', self.theta)
 	z = np.arange(m)
-	cnt = 0
-	self.theta = 0
+	print 'rank: ', self.rank, ' | data size is: ', m
+	total_datasz = self.comm.allreduce(m, op = MPI.SUM)
+	min_datasz = self.comm.allreduce(m, op = MPI.MIN)
+	#self.theta = 0
 	for it in xrange(self.rounds):
+	    cnt = 0
 	    # shuffle indics
 	    random.shuffle(z)
 	    # traverse samples
@@ -45,17 +51,20 @@ class sgd(paralg):
 	    for i in z:
 	        cnt += 1
 		# before calc, pull theta first
-		if cnt == 0 or cnt % 100 == 0:
-		    self.theta = np.array(paralg.paralg_read(self, 'theta'))
+		#if cnt == 0 or cnt % 100 == 0:
+		self.theta = np.array(paralg.paralg_read(self, 'theta'))
 		# update weights
-		delta = self.alpha * (self.label[i] - self.loss_func_gra(self.sample[i], self.theta)) * self.sample[i] + self.beta * 2. * self.alpha * self.theta
+		grad = self.label[i] - self.loss_func_gra(self.sample[i], self.theta)
+		delta = self.alpha * grad * self.sample[i] - self.beta * 2. * self.alpha * self.theta
 	        # push delta
-		if cnt == 0 or cnt % 100 == 0:
-		    paralg.paralg_inc(self, 'theta', delta)
+		#if cnt == 0 or cnt % 100 == 0:
+		paralg.paralg_inc(self, 'theta', delta)
 		self.theta = self.theta + delta
             #paralg.paralg_inc(self, 'theta', delta)
-            if debug:
-		err.append(sum([(self.label[i] - self.loss_func_gra(self.sample[i], self.theta)) ** 2 for i in range(m)]))
+                if debug and cnt < min_datasz:
+		    local_err = sum([(self.label[i] - self.loss_func_gra(self.sample[i], self.theta)) ** 2 for i in range(m)])
+		    fz = self.comm.allreduce(local_err, op = MPI.SUM)
+                    err.append(fz / total_datasz)
 	self.comm.barrier()
 	self.theta = np.array(paralg.paralg_read(self, 'theta'))
 	if debug:
@@ -63,7 +72,6 @@ class sgd(paralg):
 
     def parser_local(self, linelst):
        import numpy as np
-       print 'debug', self.rank, len(linelst)
        a = []
        b = []
        for line in linelst: 
@@ -76,23 +84,23 @@ class sgd(paralg):
 
     def solve(self):
 	import time
-	#from sklearn import datasets
 	import matplotlib.pyplot as plt
     	from parasol.utils.lineparser import parser_b
 	paralg.loadinput(self, self.filename)
         self.sample, self.label = self.parser_local(self.linelst)
 	self.comm.barrier()
         s = time.time()
-	#debug_flag = True
-	debug_flag = False
+	debug_flag = True
+	#debug_flag = False
         if debug_flag:
 	    err = self.__sgd_kernel(debug_flag)
 	    if self.rank == 0:
-	        print err
-	    plt.plot(err, linewidth = 2)
-	    plt.xlabel('Training example', fontsize = 20)
-	    plt.ylabel('Error', fontsize = 20)
-	    plt.show()
+	    #    print err
+	        print len(err)
+	        plt.plot(err, linewidth = 2)
+	        plt.xlabel('Training example', fontsize = 20)
+	        plt.ylabel('Error', fontsize = 20)
+	        plt.show()
 	else:
 	    self.__sgd_kernel(debug_flag)
 	f = time.time()
