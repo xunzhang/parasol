@@ -90,8 +90,8 @@ class sgd(paralg):
         self.sample, self.label = self.parser_local(self.linelst)
 	self.comm.barrier()
         s = time.time()
-	debug_flag = True
-	#debug_flag = False
+	#debug_flag = True
+	debug_flag = False
         if debug_flag:
 	    err = self.__sgd_kernel(debug_flag)
 	    if self.rank == 0:

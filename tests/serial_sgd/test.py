@@ -25,24 +25,24 @@ def cal_loss(theta, x, y):
 
 def test_sgd():
     import time
-    f = file('/home/xunzhang/xunzhang/Data/classification/000.csv')
+    f = file('/home/xunzhang/xunzhang/Data/classification/train140')
     x, y = load(f)
    
     err = ''
     #theta = log_reg_sgd(x, y, 0.002, max_iter = 2)
     starttime = time.time()  
-    theta, err = log_reg_regularized_sgd(x, y, 0.01, 0.001, max_iter = 10, debug = True)
-    #theta = log_reg_regularized_sgd(x, y, 0.01, 0.001, max_iter = 8)
+    theta, err = log_reg_regularized_sgd(x, y, 0.01, 0.001, max_iter = 300, debug = True)
+    #theta = log_reg_regularized_sgd(x, y, 0.01, 0.001, max_iter = 300)
     endtime = time.time()  
     print 'kernel time', (endtime - starttime) 
      
     # print train convergency condition
     if err:
         print 'train mean loss:', err[-1]
-        plt.plot(err, linewidth=2)
-        plt.xlabel('Training example', fontsize=20)
-        plt.ylabel('Error', fontsize=20)
-        plt.show()
+        #plt.plot(err, linewidth=2)
+        #plt.xlabel('Training example', fontsize=20)
+        #plt.ylabel('Error', fontsize=20)
+        #plt.show()
     
     # calc pred mean loss
     f2 = file('/home/xunzhang/xunzhang/Data/classification/pred10k')
