@@ -6,5 +6,5 @@
 "alpha" : 0.01,
 "beta" : 0.001,
 "rounds" : 300,
-"limit_s" : 1
+"limit_s" : 0
 }

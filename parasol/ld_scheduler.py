@@ -29,7 +29,7 @@ class ld_scheduler(Exception):
         ret = []
 	rank = self.comm.Get_rank()
 	size = self.comm.Get_size()
-	
+        
 	if self.pattern == ('linesplit' or 'fvec'):
 	    lines = loads[rank]()
 	    for line in lines:
@@ -42,14 +42,14 @@ class ld_scheduler(Exception):
 	bnd = ntasks + size - 2
 	flag = 0
         
-        if rank == self.leader:
+	if rank == self.leader:
 	    # load tasks [0, self.blk_sz - 1]
 	    for i in xrange(self.blk_sz):
 	        lines = loads[i]()
 		for line in lines:
 		    ret.append(line)
 	if rank != self.leader:
-	    while(1):
+	    while 1:
 	        if flag == 1: break
 		if cnt == ntasks - 1: break
 		self.comm.send(rank, self.leader, 2013)
@@ -72,8 +72,10 @@ class ld_scheduler(Exception):
 		src = stat.Get_source()
 		self.comm.send(cnt, src, 2013)
 		if cnt == ntasks - 1 and flag == 0:
+		    self.comm.send(flag, src, 2013)
 		    flag = 1
-		self.comm.send(flag, src, 2013)
+		else:
+		    self.comm.send(flag, src, 2013)
 		mutex.release()
         return ret
 
@@ -109,7 +111,7 @@ class ld_scheduler(Exception):
 		    if len(stf) != 3:
 		        print 'error in lines_organize: fmt of input files not supported!'
 			sys.exit(1)
-		    tpl = (stf[0], stf[1], stf[2])
+		    tpl = (stf[0], stf[1], float(stf[2]))
 		    lineslotslst[self.h(stf[0], stf[1])].append(tpl)
 	return lineslotslst
 
@@ -139,22 +141,43 @@ class ld_scheduler(Exception):
 	for i in xrange(len(degree)):
 	    degreemap[i] = degree[i]
 	
-	rows = list(set(row_comm.allreduce(rows, op = MPI.SUM)))
-	cols = list(set(col_comm.allreduce(cols, op = MPI.SUM)))
-	rows.sort()
-	cols.sort()
+	rows = row_comm.allreduce(rows, op = MPI.SUM)
+	cols = col_comm.allreduce(cols, op = MPI.SUM)
+	#rows = list(set(row_comm.allreduce(rows, op = MPI.SUM)))
+	#cols = list(set(col_comm.allreduce(cols, op = MPI.SUM)))
+	#rows.sort()
+	#cols.sort()
 
 	rowmap = {} 
 	rowrevmap = {} 
 	colmap = {} 
 	colrevmap = {}
-	for ids, ind in enumerate(rows):
-	    rowmap[ids] = ind
-	    rowrevmap[ind] = ids
-	for ids, ind in enumerate(cols):
-	    colmap[ids] = ind
-	    colrevmap[ind] = ids
-	
+
+	#for ids, ind in enumerate(rows):
+	#    rowmap[ids] = ind
+	#    rowrevmap[ind] = ids
+	#for ids, ind in enumerate(cols):
+	#    colmap[ids] = ind
+	#    colrevmap[ind] = ids
+	#for k in xrange(len(slotslst)):
+	#    slotslst[k] = (rowrevmap[slotslst[k][0]], colrevmap[slotslst[k][1]], slotslst[k][2])
+        
+	newi = []
+	newj = []
+	rcnt = 0
+	ccnt = 0
+	for item in rows:
+	    if rowrevmap.get(item) == None:
+	        rowmap[rcnt] = item
+		rowrevmap[item] = rcnt
+		rcnt += 1
+	    newi.append(rowrevmap[item])
+        for item in cols:
+	    if colrevmap.get(item) == None:
+	        colmap[ccnt] = item
+		colrevmap[item] = ccnt
+		ccnt += 1
+	    newj.append(colrevmap[item])
 	for k in xrange(len(slotslst)):
 	    slotslst[k] = (rowrevmap[slotslst[k][0]], colrevmap[slotslst[k][1]], slotslst[k][2])
 

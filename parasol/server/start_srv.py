@@ -78,7 +78,7 @@ def multithrd_main(init_host):
     sock.bind('tcp://*:' + str(ports[0]))
     thrd_tasks.append(threading.Thread(target = thread_exec, args = (sock, )))
 
-    for i in xrange(1, 4):
+    for i in [1, 2, 3]:
         sock = context.socket(zmq.PULL)
 	sock.bind('tcp://*:' + str(ports[i]))
 	thrd_tasks.append(threading.Thread(target = thread_exec, args = (sock, )))

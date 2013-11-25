@@ -61,12 +61,17 @@ class paralg(parasrv):
         #    self.dataset_sz = self.mtx.shape[0] * self.rounds
         #    #self.dataset_sz = self.rounds
     	from parasol.loader import loader
-	ld = loader(filename, self.comm, pattern, mix)
+	ld = loader(filename, self.comm, pattern, parser, mix)
 	self.linelst = ld.load()
+	#print 'dsadasr', pattern, self.linelst
 	self.dataset_sz = len(self.linelst) * self.rounds
 	if pattern != 'linesplit':
-	    self.rmap, self.cmap, self.dmap, self.col_dmap = ld.create_matrix(self.linelst)
-	    self.dataset_sz = self.mtx.shape[0] * self.rounds
+	    self.graph, self.rmap, self.cmap, self.dmap, self.col_dmap = ld.create_graph(self.linelst)
+	    self.dimx = len(self.rmap)#max([tpl[0] for tpl in self.graph]) + 1
+	    self.dimy = len(self.cmap)#max([tpl[1] for tpl in self.graph]) + 1
+	    self.dataset_sz = self.rounds 
+	    #self.rmap, self.cmap, self.dmap, self.col_dmap = ld.create_matrix(self.linelst)
+	    #self.dataset_sz = self.mtx.shape[0] * self.rounds
         
     def getlines(self):
         return self.linelst
@@ -76,7 +81,13 @@ class paralg(parasrv):
 
     def sync(self):
         self.comm.barrier()
- 
+
+    def get_nodeid(self):
+        return self.comm.Get_rank()
+
+    def get_nodesize(self):
+        return self.comm.Get_size()
+
     def ge_suffix(self):
         suffix = ''
         if self.comm.Get_rank() == 0:
@@ -89,7 +100,10 @@ class paralg(parasrv):
                 os.system('mkdir ' + folder)
    
     def iter_done(self):
-	clock_key = 'clientclock_' + str(self.clock % self.limit_s)
+        if self.limit_s == 0:
+	    clock_key = 'clientclock_0'
+	else:
+	    clock_key = 'clientclock_' + str(self.clock % self.limit_s)
 	self.kvm[self.clockserver].update(clock_key, 1)
         self.clock += 1
 	if self.clock == self.dataset_sz:

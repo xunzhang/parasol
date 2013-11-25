@@ -35,9 +35,9 @@ if __name__ == '__main__':
 
     bsmf_solver.solve()
 
-    esum = bsmf_solver.calc_loss()
+    rmse = bsmf_solver.calc_rmse()
     if comm.Get_rank() == 0:
-        print 'esum is', esum
+        print 'esum is', rmse
 
     bsmf_solver.write_bsmf_result()
     

@@ -33,7 +33,7 @@ if __name__ == '__main__':
         rounds = json_obj['rounds']
     else:
         rounds = 10
-    if json_obj.get('limit_s'):
+    if json_obj.get('limit_s') != None:
         limit_s = json_obj['limit_s']
     else:
         limit_s = 3
