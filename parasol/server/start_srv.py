@@ -29,14 +29,15 @@ def prepare(init_host):
     return portlst
     
 def thread_exec(sock):
+    #print threading.current_thread()
     global opmutex
     while 1:
         msg = sock.recv()
 	l = msg.split('parasol')
 	oplst = [mp.unpackb(ii) for ii in l]
-	opmutex.acquire()
 	ind = oplst[0]
 	v = ''
+	opmutex.acquire()
 	if ind == 'pull':
 	    v = kvpoll_lst[0].get(oplst[1])
 	if ind == 'pull_multi':

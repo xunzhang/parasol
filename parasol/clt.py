@@ -35,7 +35,7 @@ class kv(Exception):
             self.pullflag = True
 	    self.pullsock = self._create_req_sock(self.ports[0])
 	self.pullsock.send(self.cp.pull(key))
-        return mp.unpackb(self.pullsock.recv())
+	return mp.unpackb(self.pullsock.recv())
 
     def pull_multi(self, keylst):
         if not self.pull_multiflag:

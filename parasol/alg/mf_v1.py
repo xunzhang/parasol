@@ -17,9 +17,7 @@ class mf(paralg):
         paralg.__init__(self, comm, hosts_dict_lst)
         self.rank = self.comm.Get_rank()
         self.a, self.b = npfact2d(nworker)
-	print 'babba', self.a, self.b
         self.k = k
-	#print 'deubs', self.k
         self.filename = input_filename
         self.outp = outp
         self.outq = outq
@@ -46,14 +44,14 @@ class mf(paralg):
 	        self.alpha = 0.01
 	    else:
 	        self.alpha = save_alpha
-            #print 'round', it
+            #print 'round', it, self.rank
 	    for index in xrange(pl_sz):
 	        key = 'p[' + str(index) + ',:]_' + str(self.rank / self.b)
-	        self.p[index, :] = paralg.paralg_read(self, key)
+		self.p[index, :] = paralg.paralg_read(self, key)
 	    for index in xrange(ql_sz):
 	        key = 'q[:,' + str(index) + ']_' + str(self.rank % self.b)
-	        self.q[:, index] = paralg.paralg_read(self, key)
-            #print 'after round pull'
+		self.q[:, index] = paralg.paralg_read(self, key)
+            #print 'after round pull', self.rank
             
 	    for i in xrange(delta_p.shape[0]):
 	        for j in xrange(delta_p.shape[1]):
