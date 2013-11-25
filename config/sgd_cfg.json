@@ -1,6 +1,6 @@
 {
 "nserver" : 1,
-"nworker" : 2,
+"nworker" : 4,
 "input" : "/home/xunzhang/xunzhang/Data/classification/train140",
 "output" : "/home/xunzhang/xunzhang/tmp/classification/",
 "alpha" : 0.01,

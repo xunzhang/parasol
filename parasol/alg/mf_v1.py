@@ -35,13 +35,9 @@ class mf(paralg):
     
     def __mf_kernel(self):#, alpha = 0.0002, beta = 0.02, rounds = 5):
         import time
-	print 'rk:', self.rank, 'graph', self.graph
-	print 'rk:', self.rank, 'rmap', self.rmap
-	print 'rk:', self.rank, 'cmap', self.cmap
 	pl_sz = self.p.shape[0]
         ql_sz = self.q.shape[1]
         print 'data size is', len(self.graph)
-	print 'nima', self.a, self.b
 	delta_p = np.random.rand(pl_sz, self.k)
 	delta_q = np.random.rand(self.k, ql_sz)
         save_alpha = self.alpha
@@ -58,7 +54,6 @@ class mf(paralg):
 	        key = 'q[:,' + str(index) + ']_' + str(self.rank % self.b)
 	        self.q[:, index] = paralg.paralg_read(self, key)
             #print 'after round pull'
-	    #print 'aaa', self.q[0][0]
             
 	    for i in xrange(delta_p.shape[0]):
 	        for j in xrange(delta_p.shape[1]):
@@ -109,11 +104,11 @@ class mf(paralg):
 	dimy = self.dimy
         self.p = np.random.rand(dimx, self.k)
         self.q = np.random.rand(self.k, dimy)
-	self.p = np.array([[0.46500647, 0.10950494],
-			[0.47867466, 0.49807307],
-			[0.33376554, 0.24195584],
-	   		[0.9739632, 0.37057525],
-	    		[0.64395383, 0.30542925]])
+	#self.p = np.array([[0.46500647, 0.10950494],
+	#		[0.47867466, 0.49807307],
+	#		[0.33376554, 0.24195584],
+	#   		[0.9739632, 0.37057525],
+	#    		[0.64395383, 0.30542925]])
 	#if self.rank == 0:
 	#    self.p = np.array([[0.46500647, 0.10950494],[0.47867466, 0.49807307],[0.33376554, 0.24195584]])
 	#if self.rank == 1:

@@ -67,7 +67,6 @@ class kv(Exception):
             self.pushsflag = True
 	    self.pushssock = self._create_push_sock('7777')
 	self.pushssock.send(self.cp.pushs(key))
-        self.pushssock.recv()
 
     def pulls(self, key, val, uniq):
         if not self.pullsflag:
