@@ -168,10 +168,9 @@ class mf(paralg):
         import math
         esum = self.__calc_esum()
         self.comm.barrier()
+	print esum
         esum = self.comm.allreduce(esum, op = MPI.SUM)
 	cnt = self.comm.allreduce(len(self.graph), op = MPI.SUM)
-	print esum
-	print cnt
         return math.sqrt(esum / cnt)
          
     def write_mf_result(self):
