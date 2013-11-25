@@ -1,7 +1,11 @@
 {
-"k" : 20,
-"n" : 8,
-"input" : "/home/xunzhang/xunzhang/Data/book_interest/testfile",
-"outputp" : "/home/xunzhang/xunzhang/tmp/resultp/",
-"outputq" : "/home/xunzhang/xunzhang/tmp/resultq/"
+"nserver" : 1,
+"nworker" : 2,
+"k" : 1,
+"input" : "/home/xunzhang/xunzhang/Data/mf/004.csv",
+"outputp" : "/home/xunzhang/xunzhang/tmp/thusdayp/",
+"outputq" : "/home/xunzhang/xunzhang/tmp/thusdayq/",
+"alpha" : 0.002,
+"beta" : 0.02,
+"rounds" : 2000
 }

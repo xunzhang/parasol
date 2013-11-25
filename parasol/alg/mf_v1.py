@@ -13,8 +13,8 @@ from parasol.ps import paralg
     
 class mf(paralg):
 
-    def __init__(self, comm, hosts_dict_lst, nworker, k, input_filename, outp, outq, alpha = 0.002, beta = 0.02, rounds = 3, limit_s = 3):
-        paralg.__init__(self, comm, hosts_dict_lst, nworker, rounds, limit_s)
+    def __init__(self, comm, hosts_dict_lst, nworker, k, input_filename, outp, outq, alpha = 0.002, beta = 0.02, rounds = 3):
+        paralg.__init__(self, comm, hosts_dict_lst)
         self.rank = self.comm.Get_rank()
         self.a, self.b = npfact2d(nworker)
 	print 'babba', self.a, self.b

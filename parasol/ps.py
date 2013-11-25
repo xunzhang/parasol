@@ -34,7 +34,7 @@ class paralg(parasrv):
     
     def loadinput(self, filename, parser = (lambda l : l), pattern = 'linesplit', mix = False):
         from parasol.loader import loader 
-	ld = loader(filename, self.comm, pattern, mix)
+	ld = loader(filename, self.comm, pattern, parser, mix)
 	self.linelst = ld.load()
     	if pattern != 'linesplit':
 	    self.mtx, self.rmap, self.cmap, self.dmap, self.col_dmap = ld.create_matrix(self.linelst)
