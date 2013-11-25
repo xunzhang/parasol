@@ -37,7 +37,10 @@ class paralg(parasrv):
 	ld = loader(filename, self.comm, pattern, parser, mix)
 	self.linelst = ld.load()
     	if pattern != 'linesplit':
-	    self.mtx, self.rmap, self.cmap, self.dmap, self.col_dmap = ld.create_matrix(self.linelst)
+	    self.graph, self.rmap, self.cmap, self.dmap, self.col_dmap = ld.create_graph(self.linelst)
+	    self.dimx = len(self.rmap)
+	    self.dimy = len(self.cmap)
+	    self.dataset_sz = self.rounds
      
     def ge_suffix(self):
         suffix = ''
@@ -86,7 +89,7 @@ class paralg(parasrv):
                 #valfunc(index) = self.kvm[server_index].pull(key)
             
     def paralg_write(self, key, val):
-	if isinstance(val, np.ndarray):
+	if isinstance(val, np.ndarray) or isinstance(delta, list):
 	    val = list(val)
         self.kvm[self.ring.get_node(key)].push(key, val)
 
@@ -114,7 +117,7 @@ class paralg(parasrv):
                 self.kvm[server_index].push(key, valfunc(index))
          
     def paralg_inc(self, key, delta):
-	if isinstance(delta, np.ndarray):
+	if isinstance(delta, np.ndarray) or isinstance(delta, list):
 	    delta = list(delta)
         self.kvm[self.ring.get_node(key)].update(key, delta)
 

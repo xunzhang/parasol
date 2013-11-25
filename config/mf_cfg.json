@@ -1,7 +1,7 @@
 {
 "nserver" : 1,
 "nworker" : 2,
-"k" : 1,
+"k" : 2,
 "input" : "/home/xunzhang/xunzhang/Data/mf/004.csv",
 "outputp" : "/home/xunzhang/xunzhang/tmp/thusdayp/",
 "outputq" : "/home/xunzhang/xunzhang/tmp/thusdayq/",

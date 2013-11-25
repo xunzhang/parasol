@@ -56,11 +56,9 @@ class mf(paralg):
 	        self.p[index, :] = paralg.paralg_read(self, key)
 	    for index in xrange(ql_sz):
 	        key = 'q[:,' + str(index) + ']_' + str(self.rank % self.b)
-		if index == 0:
-		    print key
 	        self.q[:, index] = paralg.paralg_read(self, key)
             #print 'after round pull'
-	    print 'aaa', self.q[0][0]
+	    #print 'aaa', self.q[0][0]
             
 	    for i in xrange(delta_p.shape[0]):
 	        for j in xrange(delta_p.shape[1]):
@@ -81,8 +79,8 @@ class mf(paralg):
                     self.p[i][ki] += delta_p[i][ki]
                     delta_q[ki][j] = self.alpha * (2 * eij * self.p[i][ki] - self.beta * self.q[ki][j])
 		    self.q[ki][j] += delta_q[ki][j]
-		    if ki == 0 and j == 0:
-		        print 'round', it, ' fuck', delta_q[0][0], 'rank : ', self.rank
+		    #if ki == 0 and j == 0:
+		    #    print 'round', it, ' fuck', delta_q[0][0], 'rank : ', self.rank
 		# TO BE OPTIMIZED
 	        key = 'p[' + str(i) + ',:]_' + str(self.rank / self.b)
 	    	paralg.paralg_inc(self, key, delta_p[i, :])
@@ -92,8 +90,6 @@ class mf(paralg):
 	    #start = clock()
             #print 'local calc time is', start - end
             
-	    paralg.iter_done(self)
-    
         # last pull p, may not calc on this procs, but can be calced on others
         self.comm.barrier()
         start = clock()
@@ -113,18 +109,19 @@ class mf(paralg):
 	dimy = self.dimy
         self.p = np.random.rand(dimx, self.k)
         self.q = np.random.rand(self.k, dimy)
-	#self.p = np.array([[0.46500647, 0.10950494],
-	#		[0.47867466, 0.49807307],
-	#		[0.33376554, 0.24195584],
-	#   		[0.9739632, 0.37057525],
-	#    		[0.64395383, 0.30542925]])
-	if self.rank == 0:
-	    self.p = np.array([[0.46500647, 0.10950494],[0.47867466, 0.49807307],[0.33376554, 0.24195584]])
-	if self.rank == 1:
-	    self.p = np.array([[0.9739632, 0.37057525], [0.64395383, 0.30542925]])
+	self.p = np.array([[0.46500647, 0.10950494],
+			[0.47867466, 0.49807307],
+			[0.33376554, 0.24195584],
+	   		[0.9739632, 0.37057525],
+	    		[0.64395383, 0.30542925]])
+	#if self.rank == 0:
+	#    self.p = np.array([[0.46500647, 0.10950494],[0.47867466, 0.49807307],[0.33376554, 0.24195584]])
+	#if self.rank == 1:
+	#    self.p = np.array([[0.9739632, 0.37057525], [0.64395383, 0.30542925]])
 
-	self.q = np.array([[0.96802557, 0.22467435, 0.49266987, 0.18327164],
-			[0.81976892, 0.57031032, 0.22665017, 0.23747223]])
+	#self.q = np.array([[0.96802557, 0.22467435, 0.49266987, 0.18327164],
+	#		[0.81976892, 0.57031032, 0.22665017, 0.23747223]])
+	
 	#print self.p
 	#print self.q
         #print 'dimx is', dimx

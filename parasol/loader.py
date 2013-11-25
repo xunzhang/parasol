@@ -20,7 +20,34 @@ class loader(Exception):
 	print 'rank %d lines got' % self.comm.Get_rank()
 	self.comm.barrier()
 	return linelst
-        
+    
+    def create_graph(self, lines):
+        import numpy as np
+	from scipy.sparse import coo_matrix
+        if self.pattern == 'fvec':
+	    rmap = {}
+	    dense_mtx = []
+	    cnt = 0
+	    for line in lines:
+	        stf = self.parserfunc(line)
+		rmap[cnt] = stf[0]
+		dense_mtx.append(stf[1:])
+		cnt += 1
+	    dense_mtx = np.array(mtx)
+	    return dense_mtx, rmap
+	else:
+	    slotslst = self.scheduler.lines_organize(lines, self.parserfunc)
+	    print 'rank %d slotslst generated' % self.comm.Get_rank()
+	    self.comm.barrier()
+	    slotslst = self.scheduler.exchange(slotslst)
+	    print 'rank %d get desirable lines' % self.comm.Get_rank()
+	    slotslst, rmap, cmap, dmap, col_dmap = self.scheduler.index_mapping(slotslst)
+	    print 'rank %d finish ind_mapping' % self.comm.Get_rank()
+	    self.comm.barrier()
+	    graph = zip(np.array([i[0] for i in slotslst]), np.array([i[1] for i in slotslst]), np.array([float(i[2]) for i in slotslst]))
+	    print 'rank %d create graph' % self.comm.Get_rank()
+	    return graph, rmap, cmap, dmap, col_dmap
+
     def create_matrix(self, lines):
         import numpy as np
 	from scipy.sparse import coo_matrix
