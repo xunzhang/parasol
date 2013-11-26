@@ -1,12 +1,12 @@
 {
 "nserver" : 1,
-"nworker" : 2,
-"k" : 2,
-"input" : "/home/xunzhang/xunzhang/Data/mf/004.csv",
+"nworker" : 6,
+"k" : 30,
+"input" : "/home/xunzhang/xunzhang/Data/mf/movielen10k",
 "outputp" : "/home/xunzhang/xunzhang/tmp/thusdayp/",
 "outputq" : "/home/xunzhang/xunzhang/tmp/thusdayq/",
 "alpha" : 0.002,
 "beta" : 0.02,
-"rounds" : 2000,
-"limit_s" : 0
+"rounds" : 50,
+"limit_s" : 2
 }

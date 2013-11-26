@@ -17,7 +17,6 @@ class mf(paralg):
         paralg.__init__(self, comm, hosts_dict_lst, nworker, rounds, limit_s)
         self.rank = self.comm.Get_rank()
         self.a, self.b = npfact2d(nworker)
-	print 'babba', self.a, self.b
         self.k = k
 	#print 'deubs', self.k
         self.filename = input_filename
@@ -35,19 +34,15 @@ class mf(paralg):
     
     def __mf_kernel(self):#, alpha = 0.0002, beta = 0.02, rounds = 5):
         import time
-	print 'rk:', self.rank, 'graph', self.graph
-	print 'rk:', self.rank, 'rmap', self.rmap
-	print 'rk:', self.rank, 'cmap', self.cmap
 	pl_sz = self.p.shape[0]
         ql_sz = self.q.shape[1]
         print 'data size is', len(self.graph)
-	print 'nima', self.a, self.b
 	delta_p = np.random.rand(pl_sz, self.k)
 	delta_q = np.random.rand(self.k, ql_sz)
         save_alpha = self.alpha
 	for it in xrange(self.rounds):
 	    if it < 10:
-	        self.alpha = 0.01
+	        self.alpha = 0.006
 	    else:
 	        self.alpha = save_alpha
             #print 'round', it
@@ -56,11 +51,8 @@ class mf(paralg):
 	        self.p[index, :] = paralg.paralg_read(self, key)
 	    for index in xrange(ql_sz):
 	        key = 'q[:,' + str(index) + ']_' + str(self.rank % self.b)
-		if index == 0:
-		    print key
 	        self.q[:, index] = paralg.paralg_read(self, key)
             #print 'after round pull'
-	    print 'aaa', self.q[0][0]
             
 	    for i in xrange(delta_p.shape[0]):
 	        for j in xrange(delta_p.shape[1]):
@@ -81,8 +73,6 @@ class mf(paralg):
                     self.p[i][ki] += delta_p[i][ki]
                     delta_q[ki][j] = self.alpha * (2 * eij * self.p[i][ki] - self.beta * self.q[ki][j])
 		    self.q[ki][j] += delta_q[ki][j]
-		    if ki == 0 and j == 0:
-		        print 'round', it, ' fuck', delta_q[0][0], 'rank : ', self.rank
 		# TO BE OPTIMIZED
 	        key = 'p[' + str(i) + ',:]_' + str(self.rank / self.b)
 	    	paralg.paralg_inc(self, key, delta_p[i, :])
@@ -118,13 +108,12 @@ class mf(paralg):
 	#		[0.33376554, 0.24195584],
 	#   		[0.9739632, 0.37057525],
 	#    		[0.64395383, 0.30542925]])
-	if self.rank == 0:
-	    self.p = np.array([[0.46500647, 0.10950494],[0.47867466, 0.49807307],[0.33376554, 0.24195584]])
-	if self.rank == 1:
-	    self.p = np.array([[0.9739632, 0.37057525], [0.64395383, 0.30542925]])
-
-	self.q = np.array([[0.96802557, 0.22467435, 0.49266987, 0.18327164],
-			[0.81976892, 0.57031032, 0.22665017, 0.23747223]])
+	#if self.rank == 0:
+	#    self.p = np.array([[0.46500647, 0.10950494],[0.47867466, 0.49807307],[0.33376554, 0.24195584]])
+	#if self.rank == 1:
+	#    self.p = np.array([[0.9739632, 0.37057525], [0.64395383, 0.30542925]])
+	#self.q = np.array([[0.96802557, 0.22467435, 0.49266987, 0.18327164],
+	#		[0.81976892, 0.57031032, 0.22665017, 0.23747223]])
 	#print self.p
 	#print self.q
         #print 'dimx is', dimx
@@ -149,7 +138,7 @@ class mf(paralg):
         import time
         from parasol.utils.lineparser import parser_b
         #from parasol.utils.lineparser import parser_ussrt
-	paralg.loadinput(self, self.filename, parser_b(','), 'fmap')
+	paralg.loadinput(self, self.filename, parser_b(','), 'fsmap')
         self.comm.barrier()
         s = time.time()
 	self.__matrix_factorization()

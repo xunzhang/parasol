@@ -122,7 +122,7 @@ class paralg(parasrv):
 	    self.cached_para[key] = self.kvm[self.ring.get_node(key)].pull(key)
             return self.cached_para[key]
             #return self.kvm[self.ring.get_node(key)].pull(key)
-	if self.stale_cache + self.limit_s >= self.clock:
+	if self.stale_cache + self.limit_s > self.clock:
 	    # cache hit
 	    return self.cached_para[key]
         else:
