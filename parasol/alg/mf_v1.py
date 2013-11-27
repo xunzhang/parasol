@@ -7,7 +7,7 @@ from mpi4py import MPI
 import random
 from time import clock
 from optparse import OptionParser
-from parasol.decomp import npfact2d
+from parasol.decomp import npfact2d, npfactx
 from parasol.writer.writer import outputvec    
 from parasol.ps import paralg
     
@@ -17,7 +17,8 @@ class mf(paralg):
         paralg.__init__(self, comm, hosts_dict_lst, nworker, rounds, limit_s)
         self.rank = self.comm.Get_rank()
         self.a, self.b = npfact2d(nworker)
-        self.k = k
+        #self.a, self.b = npfactx(nworker)
+	self.k = k
 	#print 'deubs', self.k
         self.filename = input_filename
         self.outp = outp
@@ -37,51 +38,56 @@ class mf(paralg):
 	pl_sz = self.p.shape[0]
         ql_sz = self.q.shape[1]
         print 'data size is', len(self.graph)
-	delta_p = np.random.rand(pl_sz, self.k)
-	delta_q = np.random.rand(self.k, ql_sz)
-        save_alpha = self.alpha
+        delta_p = np.random.rand(pl_sz, self.k)
+        delta_q = np.random.rand(self.k, ql_sz)
+	print 'ffffffff', self.a, self.b
 	for it in xrange(self.rounds):
-	    if it < 10:
-	        self.alpha = 0.006
-	    else:
-	        self.alpha = save_alpha
-            #print 'round', it
+            print 'round', it, self.rank
 	    for index in xrange(pl_sz):
 	        key = 'p[' + str(index) + ',:]_' + str(self.rank / self.b)
 	        self.p[index, :] = paralg.paralg_read(self, key)
 	    for index in xrange(ql_sz):
 	        key = 'q[:,' + str(index) + ']_' + str(self.rank % self.b)
 	        self.q[:, index] = paralg.paralg_read(self, key)
-            #print 'after round pull'
+            print 'after round pull', self.rank
+            
+            #start = clock()
+            random.shuffle(self.graph)
+            #end = cl ck()
+            #print 'shuffle time is', end - start
             
 	    for i in xrange(delta_p.shape[0]):
 	        for j in xrange(delta_p.shape[1]):
-		    delta_p[i][j] = 0.
+		    delta_p[i][j] = self.p[i][j]
 	    for i in xrange(delta_q.shape[0]):
 	        for j in xrange(delta_q.shape[1]):
-		    delta_q[i][j] = 0.
+		    delta_q[i][j] = self.q[i][j]
 
-            #start = clock()
-            random.shuffle(self.graph)
-            #end = clock()
-            #print 'shuffle time is', end - start
-             
             for i, j, v in self.graph:
-                eij = v - np.dot(self.p[i, :], self.q[:, j])
-                for ki in xrange(self.k):
-                    delta_p[i][ki] = self.alpha * (2 * eij * self.q[ki][j] - self.beta * self.p[i][ki])
-                    self.p[i][ki] += delta_p[i][ki]
-                    delta_q[ki][j] = self.alpha * (2 * eij * self.p[i][ki] - self.beta * self.q[ki][j])
-		    self.q[ki][j] += delta_q[ki][j]
-		# TO BE OPTIMIZED
-	        key = 'p[' + str(i) + ',:]_' + str(self.rank / self.b)
-	    	paralg.paralg_inc(self, key, delta_p[i, :])
-	        key = 'q[:,' + str(j) + ']_' + str(self.rank % self.b)
-             	paralg.paralg_inc(self, key, delta_q[:, j])
+	        eij = v - np.dot(self.p[i, :], self.q[:, j])
+		#delta_p = []
+		#delta_q = []
+                #for ki in xrange(self.k):
+                #    delta_p.append(self.alpha * (2 * eij * self.q[ki][j] - self.beta * self.p[i][ki]))
+                #    self.p[i][ki] += delta_p[ki]
+                #    delta_q.append(self.alpha * (2 * eij * self.p[i][ki] - self.beta * self.q[ki][j]))
+		#    self.q[ki][j] += delta_q[ki]
+	        tmpp = self.alpha * (2 * eij * self.q[:, j] - self.beta * self.p[i, :])
+		tmpq = self.alpha * (2 * eij * self.p[i, :] - self.beta * self.q[:, j])
+		self.p[i, :] += tmpp
+		self.q[:, j] += tmpq
 
+	    for index in xrange(pl_sz):
+	        key = 'p[' + str(index) + ',:]_' + str(self.rank / self.b)
+		#print 'rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrank:', self.rank, 'key', key 
+	        paralg.paralg_inc(self, key, (self.p[index, :] - delta_p[index, :]) / self.b)
+	    for index in xrange(ql_sz):
+	        key = 'q[:,' + str(index) + ']_' + str(self.rank % self.b)
+		#print 'sssssssssssssssssssssssssssssssssssssssssank:', self.rank, 'key', key 
+                paralg.paralg_inc(self, key, (self.q[:, index] - delta_q[: ,index]) / self.a)
+	    
 	    #start = clock()
             #print 'local calc time is', start - end
-            
 	    paralg.iter_done(self)
     
         # last pull p, may not calc on this procs, but can be calced on others
@@ -145,12 +151,24 @@ class mf(paralg):
         f = time.time()
 	print 'rank ', self.rank, ' kernel time ', f - s
 	self.comm.barrier()
-        
+    
+    def tricky(self, r):
+        import math
+	fm = math.floor(r)
+	if (r - fm) > 0.666:
+	    return fm + 1.
+	elif (r - fm) < 0.333:
+	    return fm
+	else:
+	    return r
+
     def __calc_esum(self):
         esum = 0.
         q = self.q.transpose()
         for i, j, v in self.graph:
-            esum += (v - np.dot(self.p[i, :], q[:, j])) ** 2
+	    tmp = np.dot(self.p[i, :], q[:, j])
+            #esum += (v - self.tricky(tmp)) ** 2
+	    esum += (v - tmp) ** 2
 	    #print v
 	    #print np.dot(self.p[i, :], q[:, j])
 	#print self.graph
@@ -165,9 +183,10 @@ class mf(paralg):
         import math
         esum = self.__calc_esum()
         self.comm.barrier()
+	print 'esum', esum
         esum = self.comm.allreduce(esum, op = MPI.SUM)
 	cnt = self.comm.allreduce(len(self.graph), op = MPI.SUM)
-	print esum
+	print 'esum after', esum
 	print cnt
         return math.sqrt(esum / cnt)
          

@@ -2,31 +2,19 @@
 import numpy
 from scipy.sparse import coo_matrix
 
-def matrix_factorization(N, M, R, P, Q, K, steps=6, alpha=0.002, beta=0.02):
+def matrix_factorization(N, M, R, P, Q, K, steps=10, alpha=0.005, beta=0.02):
     Q = Q.T
     delta_p = numpy.random.rand(N, K)
     delta_q = numpy.random.rand(K, M)
     for step in xrange(steps):
-        if step < 10:
-	    alpha = 0.01
-	else:
-	    alpha = 0.002
-	for i in xrange(N):
-	    for j in xrange(K):
-	        delta_p[i][j] = 0.
-	for i in xrange(K):
-	    for j in xrange(M):
-	        delta_q[i][j] = 0.
-	
         for i, j, v in R:
 	    eij = v - numpy.dot(P[i,:], Q[:,j])
-	    for k in xrange(K):
-		#P[i][k] += alpha * (2 * eij * Q[k][j] - beta * P[i][k])
-		#Q[k][j] += alpha * (2 * eij * P[i][k] - beta * Q[k][j])
-		delta_p[i][k] = alpha * (2 * eij * Q[k][j] - beta * P[i][k])
-		P[i][k] += delta_p[i][k]
-		delta_q[k][j] = alpha * (2 * eij * P[i][k] - beta * Q[k][j])
-		Q[k][j] += delta_q[k][j]
+	    delta_p = alpha * (2 * eij * Q[:, j] - beta * P[i, :])
+	    delta_q = alpha * (2 * eij * P[i, :] - beta * Q[:, j])
+	    P[i, :] += delta_p
+	    Q[:, j] += delta_q
+	    #P[i, :] += alpha * (2 * eij * Q[:, j] - beta * P[i, :])
+	    #Q[:, j] += alpha * (2 * eij * P[i, :] - beta * Q[:, j])
     return P, Q.T
 
 def rmse(R, W, H):
@@ -77,10 +65,10 @@ if __name__ == "__main__":
     #i = [0, 0, 0, 1, 1, 2, 2, 2, 3, 3, 4, 4, 4]
     #j = [0, 1, 3, 0, 3, 0, 1, 3, 0, 3, 1, 2, 3]
     #v = [5, 3, 1, 4, 1, 1, 1, 5, 1, 4, 1, 5, 4]
-    #f = file('/home/xunzhang/xunzhang/Data/mf/001.csv')
-    f = file('/home/xunzhang/xunzhang/Data/mf/movielen10k')
+    #f = file('/home/xunzhang/xunzhang/Data/mf/004.csv')
+    #f = file('/home/xunzhang/xunzhang/Data/mf/movielen10k')
     #f = file('/home/xunzhang/xunzhang/Data/interest/training.csv')
-    #f = file('/home/xunzhang/xunzhang/Data/mf/002.csv')
+    f = file('/home/xunzhang/xunzhang/Data/mf/004.csv')
     i, j, v = load(f)
     i, j, rmap, cmap = index_mapping(i, j)
     R = zip(i, j, v)
@@ -88,9 +76,9 @@ if __name__ == "__main__":
     M = len(cmap) #max(j) + 1
     print N
     print M
-    K = 30
-    P = numpy.random.rand(N,K)
-    Q = numpy.random.rand(M,K)
+    K = 2
+    #P = numpy.random.rand(N,K)
+    #Q = numpy.random.rand(M,K)
     #P = numpy.array([[0.46500647, 0.10950494],
     #[0.47867466, 0.49807307],
     #[0.33376554, 0.24195584]])

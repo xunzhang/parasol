@@ -5,8 +5,8 @@
 "input" : "/home/xunzhang/xunzhang/Data/mf/movielen10k",
 "outputp" : "/home/xunzhang/xunzhang/tmp/thusdayp/",
 "outputq" : "/home/xunzhang/xunzhang/tmp/thusdayq/",
-"alpha" : 0.002,
+"alpha" : 0.005,
 "beta" : 0.02,
-"rounds" : 50,
-"limit_s" : 2
+"rounds" : 30,
+"limit_s" : 0
 }
