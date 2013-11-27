@@ -26,7 +26,7 @@ class parasrv(Exception):
 
 class paralg(parasrv):
      
-    def __init__(self, comm, hosts_dict_lst, nworker, rounds = 1, limit_s = 1):
+    def __init__(self, comm, hosts_dict_lst, nworker, rounds = 1, limit_s = 0):
         self.nworker = nworker
         parasrv.__init__(self, comm, hosts_dict_lst)
 	self.clock = 0
@@ -56,7 +56,13 @@ class paralg(parasrv):
 	    self.dimy = len(self.cmap)
 	    self.dataset_sz = self.rounds 
 	    #self.dataset_sz = self.mtx.shape[0] * self.rounds
-       
+    
+    def get_cache(self):
+        '''
+	return kvs in local cache
+	'''
+        return self.cached_para
+
     def get_dataset_dim(self):
         '''
 	return graph size, default 2d
@@ -75,7 +81,7 @@ class paralg(parasrv):
 	'''
         return self.linelst
 
-    def set_steps(self, sz):
+    def set_phases(self, sz):
         '''
 	set phase size to work with ssp
 	'''

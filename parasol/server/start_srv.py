@@ -41,6 +41,8 @@ def thread_exec(sock):
 	opmutex.acquire()
 	if ind == 'pull':
 	    v = sp.pull(oplst[1])
+	    if not v:
+	        v = 'nokey'
 	if ind == 'pull_multi':
 	    v = sp.pull_multi(oplst[1])
 	if ind == 'pullall':

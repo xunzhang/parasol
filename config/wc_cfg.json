@@ -1,0 +1,8 @@
+{
+"nserver" : 1,
+"nworker" : 6,
+"k" : 7,
+"input" : "/home/xunzhang/xunzhang/Data/mf/movielen10k",
+"output" : "/home/xunzhang/xunzhang/tmp/tuesday/",
+"limit_s" : 3
+}
