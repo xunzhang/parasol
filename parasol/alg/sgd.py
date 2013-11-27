@@ -9,20 +9,17 @@ class sgd(paralg):
   
     def __init__(self, comm, hosts_dict_lst, nworker, input_filename, output, alpha = 0.002, beta = 0.1, rounds = 3, limit_s = 1):
     	paralg.__init__(self, comm, hosts_dict_lst, nworker, rounds, limit_s)
-	self.rank = self.comm.Get_rank()
-	#self.a, self.b = npfactx(nworker)
 	self.filename = input_filename
 	self.output = output
-
 	self.alpha = alpha
 	self.beta = beta
 	self.rounds = rounds
+	self.nodeif = paralg.get_nodeid(self)
 	# create folder
 	paralg.crt_outfolder(self, self.output)
 
     def loss_func_gra(self, x, theta):
         from math import e
-	#np.seterr(over='raise')
 	term  = e ** (np.dot(x, theta))
 	return term / (1. + term)
  
@@ -34,11 +31,11 @@ class sgd(paralg):
 	if debug:
 	    err = array('f', [])
 	m, n = self.sample.shape
-	#if self.rank == 0:
+	#if self.nodeid == 0:
 	self.theta = np.random.random(n)
 	paralg.paralg_write(self, 'theta', self.theta)
 	z = np.arange(m)
-	print 'rank: ', self.rank, ' | data size is: ', m
+	print 'nodeid: ', self.nodeid, ' | data size is: ', m
 	total_datasz = self.comm.allreduce(m, op = MPI.SUM)
 	min_datasz = self.comm.allreduce(m, op = MPI.MIN)
 	#print 'debug', paralg.paralg_read_all(self)
@@ -50,7 +47,7 @@ class sgd(paralg):
 	    # traverse samples
             #self.theta = np.array(paralg.paralg_read(self, 'theta'))
 	    for i in z:
-	        #if self.comm.Get_rank() == 1:
+	        #if self.comm.Get_nodeid() == 1:
 	        #    time.sleep(0.1)
 	        cnt += 1
 		# before calc, pull theta first
@@ -61,7 +58,7 @@ class sgd(paralg):
 		delta = self.alpha * grad * self.sample[i] - self.beta * 2. * self.alpha * self.theta
 	        # push delta
 		#if cnt == 0 or cnt % 100 == 0:
-		paralg.paralg_inc(self, 'theta', delta)
+		paralg.paralg_inc(self, 'theta', delta / self.splits)
 		self.theta = self.theta + delta
             #paralg.paralg_inc(self, 'theta', delta)
                 if debug and cnt < min_datasz:
@@ -69,7 +66,7 @@ class sgd(paralg):
 		    fz = self.comm.allreduce(local_err, op = MPI.SUM)
                     err.append(fz / total_datasz)
 		paralg.iter_done(self)
-	self.comm.barrier()
+	paralg.sync(self)
 	self.theta = np.array(paralg.paralg_read(self, 'theta'))
 	if debug:
 	    return err
@@ -91,14 +88,16 @@ class sgd(paralg):
 	import matplotlib.pyplot as plt
     	from parasol.utils.lineparser import parser_b
 	paralg.loadinput(self, self.filename)
+	self.linelst = paralg.getlines(self)
         self.sample, self.label = self.parser_local(self.linelst)
-	self.comm.barrier()
+	self.splits = paralg.get_decomp(self)
+	paralg.sync(self)
         s = time.time()
 	#debug_flag = True
 	debug_flag = False
         if debug_flag:
 	    err = self.__sgd_kernel(debug_flag)
-	    if self.rank == 0:
+	    if self.nodeid == 0:
 	    #    print err
 	        print len(err)
 	        plt.plot(err, linewidth = 2)
@@ -108,8 +107,8 @@ class sgd(paralg):
 	else:
 	    self.__sgd_kernel(debug_flag)
 	f = time.time()
-	print 'rank ', self.rank, ' kernel time ', f - s
-	self.comm.barrier()
+	print 'nodeid ', self.nodeid, ' kernel time ', f - s
+	paralg.sync(self)
 
     def calc_loss(self):
         from mpi4py import MPI
@@ -118,5 +117,5 @@ class sgd(paralg):
 	return self.comm.allreduce(esum, op = MPI.SUM) / self.comm.allreduce(m, op = MPI.SUM)
 
     def write_sgd_result(self):
-	if self.comm.Get_rank() == 0:
+	if self.comm.Get_nodeid() == 0:
 	    outputline(self.output + 'result', self.theta, '\t')

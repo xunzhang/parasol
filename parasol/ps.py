@@ -40,53 +40,76 @@ class paralg(parasrv):
 	self.linelst = []
 	self.all_kvs = {}
 	if self.comm.Get_rank() == 0:
-	    #self.paralg_write('clt_sz', self.nworker)
             self.kvm[self.clockserver].push('clt_sz', self.nworker)
-	    #self.init_client_clock()
-            #self.kvm[self.ring.get_node('serverclock')].push('serverclock', 0)
         self.ge_suffix()
         self.comm.barrier() 
 	 
-    #def init_client_clock(self):
-    #    for i in xrange(self.limit_s):
-    #        self.paralg_write('clientclock_' + str(i), 0)
-    
     def loadinput(self, filename, parser = (lambda l : l), pattern = 'linesplit', mix = False):
-        #from parasol.loader.crtblkmtx import ge_blkmtx
-    	#if pattern == 'linesplit':
-	#    self.linelst = ge_blkmtx(filename, self.comm, parser, pattern, mix)
-	#    self.dataset_sz = len(self.linelst) * self.rounds
-        #else:
-	#    self.rmap, self.cmap, self.dmap, self.col_dmap, self.mtx = ge_blkmtx(filename, self.comm, parser, pattern, mix)
-        #    self.dataset_sz = self.mtx.shape[0] * self.rounds
-        #    #self.dataset_sz = self.rounds
     	from parasol.loader import loader
+	self.pattern = pattern
 	ld = loader(filename, self.comm, pattern, parser, mix)
 	self.linelst = ld.load()
-	#print 'dsadasr', pattern, self.linelst
 	self.dataset_sz = len(self.linelst) * self.rounds
 	if pattern != 'linesplit':
 	    self.graph, self.rmap, self.cmap, self.dmap, self.col_dmap = ld.create_graph(self.linelst)
-	    self.dimx = len(self.rmap)#max([tpl[0] for tpl in self.graph]) + 1
-	    self.dimy = len(self.cmap)#max([tpl[1] for tpl in self.graph]) + 1
+	    self.dimx = len(self.rmap)
+	    self.dimy = len(self.cmap)
 	    self.dataset_sz = self.rounds 
-	    #self.rmap, self.cmap, self.dmap, self.col_dmap = ld.create_matrix(self.linelst)
 	    #self.dataset_sz = self.mtx.shape[0] * self.rounds
-        
+       
+    def get_dataset_dim(self):
+        '''
+	return graph size, default 2d
+	'''
+        return self.dimx, self.dimy
+    
+    def get_graph(self):
+        '''
+        return zip data
+        '''
+        return self.graph
+
     def getlines(self):
+        '''
+	return lines
+	'''
         return self.linelst
 
     def set_steps(self, sz):
+        '''
+	set phase size to work with ssp
+	'''
         self.dataset_sz = sz
 
     def sync(self):
         self.comm.barrier()
 
     def get_nodeid(self):
+        '''
+	return procs name(not pid)
+	'''
         return self.comm.Get_rank()
 
     def get_nodesize(self):
+        '''
+	return number of workers
+	'''
         return self.comm.Get_size()
+
+    def get_decomp(self):
+        '''
+	must be called after loadinput
+	return decomp dims
+	'''
+        from decomp import npfactx, npfacty, npfact2d
+	if self.pattern == 'linesplit':
+	    return npx
+        npx, npy = npfactx(self.nworker)
+        if self.pattern == 'fsmap':
+	    npx, npy = npfact2d(self.nworker)
+	if self.pattern == 'smap':
+	    npx, npy = npfacty(self.nworker)
+        return npx, npy
 
     def ge_suffix(self):
         suffix = ''
@@ -117,31 +140,17 @@ class paralg(parasrv):
 	return True
 
     def paralg_read(self, key):
-	#return self.kvm[self.ring.get_node(key)].pull(key)
         if self.clock == 0 or self.clock == self.dataset_sz:
 	    self.cached_para[key] = self.kvm[self.ring.get_node(key)].pull(key)
             return self.cached_para[key]
-            #return self.kvm[self.ring.get_node(key)].pull(key)
 	if self.stale_cache + self.limit_s > self.clock:
 	    # cache hit
 	    return self.cached_para[key]
         else:
 	    # cache miss
             # pull from server until leading slowest less than s clocks
-	    cntt = 0
             while self.stale_cache + self.limit_s < self.clock:
-	        #cntt += 1
-		#if cntt > 1:
-		#    print cntt, ' : ', self.rank
-		#    print 'real waiting'
-		# while to wait slowest
-                #print self.rank, 'stale_cache', self.stale_cache
-                #print self.rank, 'limit_s', self.limit_s
-                #print self.rank, 'clock', self.clock
-		#print self.rank, 'waiting'
                 self.stale_cache = self.kvm[self.clockserver].pull('serverclock')
-                #print self.rank, ' get ', self.stale_cache
-            #return self.kvm[self.ring.get_node(key)].pull(key)
     	    self.cached_para[key] = self.kvm[self.ring.get_node(key)].pull(key)
 	    return self.cached_para[key]
 
@@ -167,9 +176,7 @@ class paralg(parasrv):
 		if cache_flag:
 		    valfunc(index, self.cached_para[key])
 		else:
-		    #print 'fuckkkk', self.kvm[server_index].pull(key)
                     valfunc(index, self.kvm[server_index].pull(key))
-                    #valfunc(index) = self.kvm[server_index].pull(key)
             
     def __paralg_pack_batch_read(self, valfunc, keyfunc, stripfunc, sz, cache_flag):
         lst_dict = {}
