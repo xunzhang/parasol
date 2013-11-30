@@ -52,6 +52,7 @@ def thread_exec(sock):
 	        sp.clt_sz_push(oplst[2])
 	    else:
 	        sp.push(oplst[1], oplst[2])
+	    v = 'done'
 	if ind == 'push_multi':
 	    sp.push_multi(oplst[1])
 	if ind == 'inc':
@@ -75,12 +76,13 @@ def multithrd_main(init_host):
 
     thrd_tasks = []
     context = zmq.Context()
-    
-    sock = context.socket(zmq.REP)
-    sock.bind('tcp://*:' + str(ports[0]))
-    thrd_tasks.append(threading.Thread(target = thread_exec, args = (sock, )))
+   
+    for i in [0, 1]:
+        sock = context.socket(zmq.REP)
+        sock.bind('tcp://*:' + str(ports[i]))
+        thrd_tasks.append(threading.Thread(target = thread_exec, args = (sock, )))
 
-    for i in [1, 2, 3]:
+    for i in [2, 3]:
         sock = context.socket(zmq.PULL)
 	sock.bind('tcp://*:' + str(ports[i]))
 	thrd_tasks.append(threading.Thread(target = thread_exec, args = (sock, )))

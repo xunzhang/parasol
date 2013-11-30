@@ -55,8 +55,9 @@ class kv(Exception):
     def push(self, key, val):
         if not self.pushflag:
             self.pushflag = True
-	    self.pushsock = self._create_push_sock(self.ports[1])
+	    self.pushsock = self._create_req_sock(self.ports[1])
 	self.pushsock.send(self.cp.push(key, val))
+	self.pushsock.recv()
     
     def push_multi(self, kvdict):
         if not self.push_multiflag:
