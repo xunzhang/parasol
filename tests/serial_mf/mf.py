@@ -66,9 +66,9 @@ if __name__ == "__main__":
     #j = [0, 1, 3, 0, 3, 0, 1, 3, 0, 3, 1, 2, 3]
     #v = [5, 3, 1, 4, 1, 1, 1, 5, 1, 4, 1, 5, 4]
     #f = file('/home/xunzhang/xunzhang/Data/mf/004.csv')
-    #f = file('/home/xunzhang/xunzhang/Data/mf/movielen10k')
+    f = file('/home/xunzhang/xunzhang/Data/mf/movielen10k')
     #f = file('/home/xunzhang/xunzhang/Data/interest/training.csv')
-    f = file('/home/xunzhang/xunzhang/Data/mf/004.csv')
+    #f = file('/home/xunzhang/xunzhang/Data/mf/004.csv')
     i, j, v = load(f)
     i, j, rmap, cmap = index_mapping(i, j)
     R = zip(i, j, v)
@@ -76,9 +76,9 @@ if __name__ == "__main__":
     M = len(cmap) #max(j) + 1
     print N
     print M
-    K = 2
-    #P = numpy.random.rand(N,K)
-    #Q = numpy.random.rand(M,K)
+    K = 100
+    P = numpy.random.rand(N,K)
+    Q = numpy.random.rand(M,K)
     #P = numpy.array([[0.46500647, 0.10950494],
     #[0.47867466, 0.49807307],
     #[0.33376554, 0.24195584]])

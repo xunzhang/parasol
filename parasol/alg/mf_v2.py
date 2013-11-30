@@ -46,7 +46,7 @@ class mf(paralg):
 	    for i, j, v in self.graph:
 		key_p = 'p[' + str(i) + ',:]_' + str(self.nodeid / self.b)
 		key_q = 'q[:,' + str(j) + ']_' + str(self.nodeid % self.b)
-
+		
 		# pull
 		self.p[i, :] = paralg.paralg_read(self, key_p)
 		self.q[:, j] = paralg.paralg_read(self, key_q)
