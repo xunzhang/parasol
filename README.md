@@ -56,10 +56,10 @@ Logo for parasol is really cool, you can make it with only one stroke:
  (0.5,1) -> (0, 0.5) -> (1,0.5) -> (0.5, 1) -> (0.5, 0.25) -> (0.25, 0.25)
 ```
 
-Whisper
+Whispers
 -------
 Since Python is slow, I am now rewriting a C++ version which is called [Paracel](http://code.dapps.douban.com/paracel).
 
-If you are using parasol, let me know.
+If you are using parasol/paracel, let me know.
 
 Any bugs and related problems, just ping me: <wuhong@douban.com>.
