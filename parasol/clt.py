@@ -65,11 +65,14 @@ class kv(Exception):
 	    self.push_multisock = self._create_push_sock(self.ports[1])
 	self.push_multisock.send(self.cp.push_multi(kvdict))
           
-    def update(self, key, delta):
-        if not self.updateflag:
-            self.updateflag = True
+    def update(self, key, delta, func = ''):
+	if not self.updateflag:
+	    self.updateflag = True
 	    self.updatesock = self._create_push_sock(self.ports[2])
-	self.updatesock.send(self.cp.inc(key, delta))
+        if func:
+	    self.updatesock.send(self.cp.update(key, delta, func))
+	else:
+            self.updatesock.send(self.cp.update(key, delta))
     
     def pushs(self, key):
         if not self.pushsflag:

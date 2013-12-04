@@ -248,7 +248,7 @@ class paralg(parasrv):
 		    self.cached_para[tmpkey] = dict_dict[i][tmpkey]
                 self.kvm[i].push_multi(dict_dict[i])
      
-    def paralg_inc(self, key, delta):
+    def paralg_inc(self, key, delta, func = ''):
 	# update delta to local cache, make sure to read-my-writes
 	if isinstance(delta, np.ndarray) or isinstance(delta, list):
 	    delta = list(delta)

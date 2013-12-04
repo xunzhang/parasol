@@ -36,6 +36,18 @@ class pykv(Exception):
             return False
         return True
     
+    def update(self, key, delta, func_str):
+        accumulator = lambda x, y : x + y
+        exec(func_str)
+        if key not in self.pdict:
+	    return False
+	try:
+	    self.pdict[key] = accumulator(self.pdict[key], delta)
+        except:
+	    print 'Must be TypeError!'
+            return False
+	return True
+
     def gets(self, key):
         v = self.get(key)
         if v:

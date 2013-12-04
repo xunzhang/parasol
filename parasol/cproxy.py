@@ -1,3 +1,4 @@
+import inspect
 import msgpack as mp
 
 class cproxy(Exception):
@@ -26,8 +27,26 @@ class cproxy(Exception):
 
     def pull_multi(self, keylst):
         return self.glue('pull_multi', keylst)
+	
+    def check_legal(self, f):
+        import types
+        def check_name(f):
+            return f.__name__ == 'accumulator'
+	def check_api(f):
+	    return len(inspect.getargspec(f).args) == 2
+	return check_name(f) and check_api(f)
          
-    def inc(self, key, delta):
+    def update(self, key, delta, func = ''):
+        import sys
+        def compact(s):
+	    return s.strip(' ').strip('\t').replace('self, ', '')
+        if func:
+	    if not self.check_legal(func):
+	        print 'Error in defining accumulator function.\n' \
+		'Func fmt: accumulator(val, delta)'
+		sys.exit(1)
+	    funcstr = inspect.getsource(func)
+	    return self.glue('update', key, delta, compact(funcstr))
         return self.glue('inc', key, delta)
         
     def pushs(self, key):

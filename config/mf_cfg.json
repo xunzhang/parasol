@@ -1,6 +1,6 @@
 {
 "nserver" : 1,
-"nworker" : 6,
+"nworker" : 4,
 "k" : 5,
 "input" : "/home/xunzhang/xunzhang/Data/mf/movielen100k",
 "outputp" : "/home/xunzhang/xunzhang/tmp/thusdayp/",
@@ -8,5 +8,5 @@
 "alpha" : 0.005,
 "beta" : 0.02,
 "rounds" : 10,
-"limit_s" : 100
+"limit_s" : 0
 }

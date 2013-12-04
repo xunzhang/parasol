@@ -65,6 +65,9 @@ class sproxy(Exception):
     def inc(self, key, delta):
         return kvpoll_lst[self.fd].incr(key, delta)
     
+    def update(self, key, delta, func_str):
+        return kvpoll_lst[self.fd].update(key, delta, func_str)
+
     def pushs(self, key):
         return kvpoll_lst[self.fd].gets(key)
     

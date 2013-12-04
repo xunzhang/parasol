@@ -62,6 +62,8 @@ def thread_exec(sock):
 	        sp.client_clock_inc(oplst[1])
 	    else:
 	        sp.inc(oplst[1], oplst[2])
+	if ind == 'update':
+	    sp.update(oplst[1], oplst[2], oplst[3])
 	if ind == 'remove':
 	    sp.remove(oplst[1])
 	if ind == 'clear':
