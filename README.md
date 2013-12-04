@@ -1,11 +1,13 @@
 Parasol Overview
 ================
 
-Parasol is a lightweight distributed computational framework designed for many machine learning problems(SVD, MF(BFGS, sgd, als, cg), LDA, Lasso...). 
+Parasol is a lightweight distributed computational framework designed for many machine learning problems: SVD, MF(BFGS, sgd, als, cg), LDA, Lasso.... 
 
-Firstly, parasol split both massive dataset and massive parameter space. Unlike Mapreduce-like systems, parasol give a simple communication model, which allows you to work with a global, distributed key-value storage called parameter server. In using parasol, you can build algorithms following this rule: 'pull parameters before learning | push parameter's updates after learning'. It is rather simple(compared to MPI) and is almost painless from serial to parallel.
+Firstly, parasol split both massive dataset and massive parameter space. Unlike Mapreduce-like systems, parasol give a simple communication model, which allows you to work with a global, distributed key-value storage called parameter server. 
 
-Secondly, parasol try to solve 'the last-reducer problem' of iterative tasks. We use bounded staleness and find a sweet spot between 'improve-iter' curve and 'iter-sec' curve. A global scheduler take charge of asynchronous control. This method is already proved to be a generalization of BSP/Pregel(by CMU).
+In using parasol, you can build algorithms following this rule: 'pull parameters before learning | push parameter's updates after learning'. It is rather a simple model(compared to MPI) and is almost painless from serial to parallel.
+
+Secondly, parasol try to solve 'the last-reducer problem' of iterative tasks. We use bounded staleness and find a sweet spot between 'improve-iter' curve and 'iter-sec' curve. A global scheduler take charge of asynchronous working. This method is already proved to be a generalization of BSP/Pregel(by CMU).
 
 Parasol is a Python implementation and originally motivated by Jeff Dean's talk @Stanford in 2013. You can get more details in his paper: "[Large Scale Distributed Deep Networks](http://static.googleusercontent.com/media/research.google.com/en//archive/large_deep_networks_nips2012.pdf)".
 
@@ -56,8 +58,8 @@ Logo for parasol is really cool, you can make it with only one stroke:
 
 Whisper
 -------
-Since Python is slow in computation, I am now writing a C++ version which is called [Paracel](http://code.dapps.douban.com/paracel).
+Since Python is slow, I am now rewriting a C++ version which is called [Paracel](http://code.dapps.douban.com/paracel).
 
 If you are using parasol, let me know.
 
-Any bugs and related problems, just [ping me](wuhong@douban.com).
+Any bugs and related problems, just ping me<wuhong@douban.com>.
