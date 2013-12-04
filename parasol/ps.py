@@ -108,9 +108,9 @@ class paralg(parasrv):
 	return decomp dims
 	'''
         from decomp import npfactx, npfacty, npfact2d
+        npx, npy = npfactx(self.nworker)
 	if self.pattern == 'linesplit':
 	    return npx
-        npx, npy = npfactx(self.nworker)
         if self.pattern == 'fsmap':
 	    npx, npy = npfact2d(self.nworker)
 	if self.pattern == 'smap':
@@ -249,14 +249,17 @@ class paralg(parasrv):
                 self.kvm[i].push_multi(dict_dict[i])
      
     def paralg_inc(self, key, delta, func = ''):
-	# update delta to local cache, make sure to read-my-writes
-	if isinstance(delta, np.ndarray) or isinstance(delta, list):
-	    delta = list(delta)
-            self.cached_para[key] = [self.cached_para[key][t] + delta[t] for t in xrange(len(delta))]	
+        if func:
+	    self.cached_para[key] = func(self.cached_para[key], delta)
 	else:
-	    self.cached_para[key] += delta
+	    # update delta to local cache, make sure to read-my-writes
+	    if isinstance(delta, np.ndarray) or isinstance(delta, list):
+	        delta = list(delta)
+                self.cached_para[key] = [self.cached_para[key][t] + delta[t] for t in xrange(len(delta))]	
+	    else:
+	        self.cached_para[key] += delta
 	# send update op to parameter server
-        self.kvm[self.ring.get_node(key)].update(key, delta)
+        self.kvm[self.ring.get_node(key)].update(key, delta, func)
 
     # p = np.random.rand(5, 2)
     # print (lambda x : list(p[x,:]))(1)

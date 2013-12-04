@@ -28,25 +28,35 @@ class cproxy(Exception):
     def pull_multi(self, keylst):
         return self.glue('pull_multi', keylst)
 	
-    def check_legal(self, f):
-        import types
-        def check_name(f):
-            return f.__name__ == 'accumulator'
-	def check_api(f):
-	    return len(inspect.getargspec(f).args) == 2
-	return check_name(f) and check_api(f)
-         
     def update(self, key, delta, func = ''):
         import sys
+	self.self_flag = False
         def compact(s):
-	    return s.strip(' ').strip('\t').replace('self, ', '')
+	    return s.strip(' ').strip('\t').replace(', ', ',').replace('self,', '')
+	
+	def check_legal(f):
+	    import types
+	    if inspect.getsource(f).find('self') != -1:
+	        self.self_flag = True
+	    def check_name(f):
+	        return f.__name__ in ('accumulator', '<lambda>')
+	    
+	    def check_api(f):
+	        nargs = len(inspect.getargspec(f).args)
+	        if self.self_flag:
+		    return nargs == 3
+		else:
+		    return nargs == 2
+	    return check_name(f) and check_api(f)
+
         if func:
-	    if not self.check_legal(func):
+	    if not check_legal(func):
 	        print 'Error in defining accumulator function.\n' \
 		'Func fmt: accumulator(val, delta)'
 		sys.exit(1)
 	    funcstr = inspect.getsource(func)
-	    return self.glue('update', key, delta, compact(funcstr))
+	    fs = compact(funcstr)
+	    return self.glue('update', key, delta, fs)
         return self.glue('inc', key, delta)
         
     def pushs(self, key):

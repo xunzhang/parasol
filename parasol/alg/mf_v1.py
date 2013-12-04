@@ -28,6 +28,9 @@ class mf(paralg):
         paralg.crt_outfolder(self, self.outq)
 	paralg.sync(self)
     
+    def accumulator(self, a, b):
+        return a + b
+
     def __mf_kernel(self):
         import time
 	pl_sz = self.p.shape[0]

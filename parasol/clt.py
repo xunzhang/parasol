@@ -69,10 +69,8 @@ class kv(Exception):
 	if not self.updateflag:
 	    self.updateflag = True
 	    self.updatesock = self._create_push_sock(self.ports[2])
-        if func:
-	    self.updatesock.send(self.cp.update(key, delta, func))
-	else:
-            self.updatesock.send(self.cp.update(key, delta))
+        #self.updatesock.send(self.cp.update(key, delta))
+	self.updatesock.send(self.cp.update(key, delta, func))
     
     def pushs(self, key):
         if not self.pushsflag:

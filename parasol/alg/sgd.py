@@ -5,6 +5,9 @@ from parasol.ps import paralg
 from parasol.writer.writer import outputline
 #from parasol.utils.parallel import npfactx
 
+def accumulator(a, b):
+    return [a[i] + b[i] for i in xrange(len(b))]
+
 class sgd(paralg):
   
     def __init__(self, comm, hosts_dict_lst, nworker, input_filename, output, alpha = 0.002, beta = 0.1, rounds = 3, limit_s = 1):
@@ -14,9 +17,12 @@ class sgd(paralg):
 	self.alpha = alpha
 	self.beta = beta
 	self.rounds = rounds
-	self.nodeif = paralg.get_nodeid(self)
+	self.nodeid = paralg.get_nodeid(self)
 	# create folder
 	paralg.crt_outfolder(self, self.output)
+
+    def accumulator(self, a, b):
+        return [a[i] + b[i] for i in xrange(len(b))]
 
     def loss_func_gra(self, x, theta):
         from math import e
@@ -58,7 +64,9 @@ class sgd(paralg):
 		delta = self.alpha * grad * self.sample[i] - self.beta * 2. * self.alpha * self.theta
 	        # push delta
 		#if cnt == 0 or cnt % 100 == 0:
-		paralg.paralg_inc(self, 'theta', delta / self.splits)
+		accumulator = lambda a, b: [a[i] + b[i] for i in xrange(len(b))]
+		paralg.paralg_inc(self, 'theta', list(delta / self.splits), accumulator)
+		#paralg.paralg_inc(self, 'theta', list(delta / self.splits), self.accumulator)
 		self.theta = self.theta + delta
             #paralg.paralg_inc(self, 'theta', delta)
                 if debug and cnt < min_datasz:
@@ -117,5 +125,5 @@ class sgd(paralg):
 	return self.comm.allreduce(esum, op = MPI.SUM) / self.comm.allreduce(m, op = MPI.SUM)
 
     def write_sgd_result(self):
-	if self.comm.Get_nodeid() == 0:
+	if self.nodeid == 0:
 	    outputline(self.output + 'result', self.theta, '\t')

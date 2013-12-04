@@ -28,7 +28,7 @@ class pykv(Exception):
             return False
         try:
             if type(delta) == type([1]) or type(delta) == type((1,2)):
-                self.pdict[key] = [self.pdict[key][t] + delta[t] for t in range(len(delta))] 
+                self.pdict[key] = [self.pdict[key][t] + delta[t] for t in xrange(len(delta))] 
             else:
                 self.pdict[key] += delta
         except:

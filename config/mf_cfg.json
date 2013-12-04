@@ -8,5 +8,5 @@
 "alpha" : 0.005,
 "beta" : 0.02,
 "rounds" : 10,
-"limit_s" : 0
+"limit_s" : 1
 }
