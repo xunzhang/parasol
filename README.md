@@ -62,4 +62,4 @@ Since Python is slow, I am now rewriting a C++ version which is called [Paracel]
 
 If you are using parasol, let me know.
 
-Any bugs and related problems, just ping me<wuhong@douban.com>.
+Any bugs and related problems, just [ping me]<wuhong@douban.com>.
