@@ -1,34 +1,38 @@
-parasol Overview
+Parasol Overview
 ================
 
-Parameter Server is a central service for many Machine Learning algorithms(sgd, mf, svd, BFGS...). It not only offers a k-v store service but also abstracts some computational logic. You can get more details in Google's fresh paper:"[Large Scale Distributed Deep Networks](http://www.cs.toronto.edu/~ranzato/publications/DistBeliefNIPS2012_withAppendix.pdf)".
+Parasol is a lightweight distributed computational framework designed for many machine learning problems(SVD, MF(BFGS, sgd, als, cg), LDA, Lasso...). 
 
-Parasol is a simple Python implementation and it is not fault-tolerant(to be done) thus far.
+Firstly, parasol split both massive dataset and massive parameter space. Unlike Mapreduce-like systems, parasol give a simple communication model, which allows you to work with a global, distributed key-value storage called parameter server. In using parasol, you can build algorithms following this rule: 'pull parameters before learning | push parameter's updates after learning'. It is rather simple(compared to MPI) and is almost painless from serial to parallel.
 
-In using parasol, you can build ML algorithms in yet another model: 'pull when using parameters, push when updating parameters'. It is rather simple model and helps putting huge size of parameters into a global, distributed memory. Since 'more data is always helpful', you can take them and get a better performance in solving large scale problems. 
+Secondly, parasol try to solve 'the last-reducer problem' of iterative tasks. We use bounded staleness and find a sweet spot between 'improve-iter' curve and 'iter-sec' curve. A global scheduler take charge of asynchronous control. This method is already proved to be a generalization of BSP/Pregel(by CMU).
 
-Parasol also makes communication asynchronously which means workers can do much more calculation in stead.
+Parasol is a Python implementation and originally motivated by Jeff Dean's talk @Stanford in 2013. You can get more details in his paper: "[Large Scale Distributed Deep Networks](http://static.googleusercontent.com/media/research.google.com/en//archive/large_deep_networks_nips2012.pdf)".
+
+Since 'more data is always valuable', you can handle them and get a better performance using parasol. 
 
 Have Fun!
 
 Prerequisite
 ------------
-You must install ZemoMQ, mpi4py in advance.
+You must install ZemoMQ, Mpi4py in advance.
 
 [ZeroMQ](http://zeromq.org) is a high-performance asynchronous messaging library aimed at use in scalable distributed or concurrent applications.
 
-[mpi4py](http://mpi4py.scipy.org) is a Python package(at PyPI) for the Message Passing Interface (MPI) standard.
+[Mpi4py](http://mpi4py.scipy.org) is a Python package(at PyPI) for the Message Passing Interface (MPI) standard.
 
 Installation
 ------------
 
 ``` bash
-$ python setup.py install --prefix=/mfs/user/xxx/local
+$ python setup.py install --prefix=xxx
 ```
 
 Say hi 2 parasol
 ----------------
-Parasol only contains a bsmf algorithm till now. By writing your own alg in parasol you must:
+Parasol only contains limited algorithms till now. (Logistic Regression, Matrix Factorization, Word Count)
+
+By writing your own alg in parasol you must:
 
 I. write a subclass inherits the 'paralg' class.
 
@@ -44,8 +48,16 @@ $ ./run_parasol.py --config /xxx/alg_cfg.json python /xxx/entry.py
 
 Logo
 ----
-Logo for parasol is really cool I think, you can make it with only one stroke:
+Logo for parasol is really cool, you can make it with only one stroke:
 
 ``` bash
  (0.5,1) -> (0, 0.5) -> (1,0.5) -> (0.5, 1) -> (0.5, 0.25) -> (0.25, 0.25)
 ```
+
+Whisper
+-------
+Since Python is slow in computation, I am now writing a C++ version which is called [Paracel](http://code.dapps.douban.com/paracel).
+
+If you are using parasol, let me know.
+
+Any bugs and related problems, just [ping me](wuhong@douban.com).
