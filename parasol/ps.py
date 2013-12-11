@@ -57,6 +57,11 @@ class paralg(parasrv):
 	    self.dataset_sz = self.rounds 
 	    #self.dataset_sz = self.mtx.shape[0] * self.rounds
     
+    def get_global_miu(self):
+        rating_sum_local = sum([tpl[2] for tpl in self.graph])
+        global_miu = self.comm.allreduce(rating_sum_local, op = MPI.SUM) / self.comm.allreduce(len(self.graph), op = MPI.SUM)
+        return global_miu
+
     def get_cache(self):
         '''
 	return kvs in local cache

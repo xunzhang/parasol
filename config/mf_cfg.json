@@ -1,12 +1,12 @@
 {
 "nserver" : 1,
-"nworker" : 4,
-"k" : 5,
-"input" : "/home/xunzhang/xunzhang/Data/mf/movielen100k",
-"outputp" : "/home/xunzhang/xunzhang/tmp/thusdayp/",
-"outputq" : "/home/xunzhang/xunzhang/tmp/thusdayq/",
+"nworker" : 2,
+"k" : 80,
+"input" : "/home/xunzhang/xunzhang/Data/mf/movielen1m",
+"outputp" : "/home/xunzhang/xunzhang/tmp/p5/",
+"outputq" : "/home/xunzhang/xunzhang/tmp/q5/",
 "alpha" : 0.005,
 "beta" : 0.02,
-"rounds" : 10,
-"limit_s" : 1
+"rounds" : 5,
+"limit_s" : 0
 }

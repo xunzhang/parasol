@@ -2,7 +2,7 @@
 "nserver" : 1,
 "nworker" : 2,
 "k" : 7,
-"input" : "/home/xunzhang/xunzhang/Data/mf/movielen100k",
+"input" : "../folly/README",
 "output" : "/home/xunzhang/xunzhang/tmp/tuesday/",
 "limit_s" : 10
 }

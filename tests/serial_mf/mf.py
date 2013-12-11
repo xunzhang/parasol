@@ -66,7 +66,7 @@ if __name__ == "__main__":
     #j = [0, 1, 3, 0, 3, 0, 1, 3, 0, 3, 1, 2, 3]
     #v = [5, 3, 1, 4, 1, 1, 1, 5, 1, 4, 1, 5, 4]
     #f = file('/home/xunzhang/xunzhang/Data/mf/004.csv')
-    f = file('/home/xunzhang/xunzhang/Data/mf/movielen10k')
+    f = file('/home/xunzhang/xunzhang/Data/mf/movielen100k')
     #f = file('/home/xunzhang/xunzhang/Data/interest/training.csv')
     #f = file('/home/xunzhang/xunzhang/Data/mf/004.csv')
     i, j, v = load(f)
